@@ -15,8 +15,8 @@ from pathlib import Path
 
 FILENAME = "estimated-production-canadian-crude-oil-equivalent.xlsx"
 SHEET_NAME = "HIST - cubic meters per day"
-RAW_BUCKET = Path("../../data/raw")
-TRANSFORMED_BUCKET = Path("../../data/transformed")
+RAW_BUCKET = Path("data/raw")
+TRANSFORMED_BUCKET = Path("data/transformed")
 CUBIC_M_TO_BARRELS = 6.2898
 
 def main():
@@ -47,6 +47,7 @@ def main():
     df.write_csv(
         file= TRANSFORMED_BUCKET / pivoted_output_name
     )
+    print("Successfully transformed: pivoted production table.")
 
     """
         Now we pivot the data to long format for our actual table, 
@@ -91,6 +92,7 @@ def main():
     unpivoted_df.write_csv(
         file=TRANSFORMED_BUCKET / unpivoted_ouput_name
     )
+    print("Successfully transformed: unpivoted production data")
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,962 @@
+<?xml version='1.0' encoding='utf-8' ?>
+
+<!-- build 20261.26.0410.0924                               -->
+<workbook original-version='18.1' source-build='2026.1.1 (20261.26.0410.0924)' source-platform='win' version='18.1' xml:base='https://public.tableau.com' xmlns:user='http://www.tableausoftware.com/xml/user'>
+  <document-format-change-manifest>
+    <AnimationOnByDefault />
+    <MarkAnimation />
+    <ObjectModelEncapsulateLegacy />
+    <ObjectModelExtractV2 />
+    <ObjectModelTableType />
+    <SchemaViewerObjectModel />
+    <SheetIdentifierTracking />
+    <_.fcp.VConnDownstreamExtractsWithWarnings.true...VConnDownstreamExtractsWithWarnings />
+    <WindowsPersistSimpleIdentifiers />
+  </document-format-change-manifest>
+  <repository-location id='AlbertaOilProduction' path='/workbooks' revision='1.0' />
+  <preferences>
+    <preference name='ui.encoding.shelf.height' value='24' />
+    <preference name='ui.shelf.height' value='26' />
+  </preferences>
+  <datasources>
+    <datasource caption='AB_SK_production' inline='true' name='federated.09z36q81koeg4k14gl2zw13te9pa' version='18.1'>
+      <connection class='federated'>
+        <named-connections>
+          <named-connection caption='AB_SK_production' name='textscan.1o5mils10fdr5012kuwbg03co08w'>
+            <connection class='textscan' directory='C:/Users/gusta/local/Personal/alberta-oil/project/data/transformed' filename='AB_SK_production.csv' password='' server='' workgroup-auth-mode='as-is' />
+          </named-connection>
+        </named-connections>
+        <relation connection='textscan.1o5mils10fdr5012kuwbg03co08w' name='AB_SK_production.csv' table='[AB_SK_production#csv]' type='table'>
+          <columns character-set='UTF-8' header='yes' locale='en_CA' separator=','>
+            <column datatype='date' name='month' ordinal='0' />
+            <column datatype='string' name='oil_type' ordinal='1' />
+            <column datatype='real' name='avg_cubic_meters_per_day' ordinal='2' />
+            <column datatype='real' name='avg_barrels_per_day' ordinal='3' />
+            <column datatype='string' name='constraint_category' ordinal='4' />
+          </columns>
+        </relation>
+        <metadata-records>
+          <metadata-record class='capability'>
+            <remote-name />
+            <remote-type>0</remote-type>
+            <parent-name>[AB_SK_production.csv]</parent-name>
+            <remote-alias />
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='character-set'>&quot;UTF-8&quot;</attribute>
+              <attribute datatype='string' name='collation'>&quot;en_GB&quot;</attribute>
+              <attribute datatype='string' name='field-delimiter'>&quot;,&quot;</attribute>
+              <attribute datatype='string' name='header-row'>&quot;true&quot;</attribute>
+              <attribute datatype='string' name='locale'>&quot;en_CA&quot;</attribute>
+              <attribute datatype='string' name='single-char'>&quot;&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>month</remote-name>
+            <remote-type>133</remote-type>
+            <local-name>[month]</local-name>
+            <parent-name>[AB_SK_production.csv]</parent-name>
+            <remote-alias>month</remote-alias>
+            <ordinal>0</ordinal>
+            <local-type>date</local-type>
+            <aggregation>Year</aggregation>
+            <contains-null>true</contains-null>
+            <object-id>[AB_SK_production.csv_52ACD3CA4177461F9D5499210B159F3C]</object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>oil_type</remote-name>
+            <remote-type>129</remote-type>
+            <local-name>[oil_type]</local-name>
+            <parent-name>[AB_SK_production.csv]</parent-name>
+            <remote-alias>oil_type</remote-alias>
+            <ordinal>1</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <scale>1</scale>
+            <width>1073741823</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RGB' />
+            <object-id>[AB_SK_production.csv_52ACD3CA4177461F9D5499210B159F3C]</object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>avg_cubic_meters_per_day</remote-name>
+            <remote-type>5</remote-type>
+            <local-name>[avg_cubic_meters_per_day]</local-name>
+            <parent-name>[AB_SK_production.csv]</parent-name>
+            <remote-alias>avg_cubic_meters_per_day</remote-alias>
+            <ordinal>2</ordinal>
+            <local-type>real</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <object-id>[AB_SK_production.csv_52ACD3CA4177461F9D5499210B159F3C]</object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>avg_barrels_per_day</remote-name>
+            <remote-type>5</remote-type>
+            <local-name>[avg_barrels_per_day]</local-name>
+            <parent-name>[AB_SK_production.csv]</parent-name>
+            <remote-alias>avg_barrels_per_day</remote-alias>
+            <ordinal>3</ordinal>
+            <local-type>real</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <object-id>[AB_SK_production.csv_52ACD3CA4177461F9D5499210B159F3C]</object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>constraint_category</remote-name>
+            <remote-type>129</remote-type>
+            <local-name>[constraint_category]</local-name>
+            <parent-name>[AB_SK_production.csv]</parent-name>
+            <remote-alias>constraint_category</remote-alias>
+            <ordinal>4</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <scale>1</scale>
+            <width>1073741823</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RGB' />
+            <object-id>[AB_SK_production.csv_52ACD3CA4177461F9D5499210B159F3C]</object-id>
+          </metadata-record>
+        </metadata-records>
+      </connection>
+      <aliases enabled='yes' />
+      <column caption='Constraint Category Proper' datatype='string' name='[Calculation_1716953914474496]' role='dimension' type='nominal'>
+        <calculation class='tableau' formula='PROPER([constraint_category])' />
+      </column>
+      <column caption='Oil Type Proper' datatype='string' name='[Calculation_1716953914593281]' role='dimension' type='nominal'>
+        <calculation class='tableau' formula='UPPER(SPLIT([oil_type], &quot;_&quot;, 1)) + &quot; &quot; + &#13;&#10;PROPER(SPLIT([oil_type], &quot;_&quot;, 2)) + &quot; &quot; +&#13;&#10;PROPER(SPLIT([oil_type], &quot;_&quot;, 3))' />
+      </column>
+      <column caption='12M Rolling Avg' datatype='real' name='[Calculation_1716953919598594]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='WINDOW_AVG(SUM([avg_barrels_per_day]), -11, 0)'>
+          <table-calc ordering-type='Rows' />
+        </calculation>
+      </column>
+      <column caption='AB_SK_production.csv' datatype='table' name='[__tableau_internal_object_id__].[AB_SK_production.csv_52ACD3CA4177461F9D5499210B159F3C]' role='measure' type='quantitative' />
+      <column caption='Avg Barrels Per Day' datatype='real' name='[avg_barrels_per_day]' role='dimension' type='quantitative' />
+      <column caption='Avg Cubic Meters Per Day' datatype='real' name='[avg_cubic_meters_per_day]' role='dimension' type='quantitative' />
+      <column caption='Constraint Category' datatype='string' name='[constraint_category]' role='dimension' type='nominal' />
+      <column caption='Month' datatype='date' name='[month]' role='dimension' type='ordinal' />
+      <column caption='Oil Type' datatype='string' name='[oil_type]' role='dimension' type='nominal' />
+      <column-instance column='[Calculation_1716953914474496]' derivation='None' name='[none:Calculation_1716953914474496:nk]' pivot='key' type='nominal' />
+      <column-instance column='[Calculation_1716953919598594]' derivation='User' name='[usr:Calculation_1716953919598594:qk:2]' pivot='key' type='quantitative'>
+        <table-calc ordering-field='[federated.09z36q81koeg4k14gl2zw13te9pa].[month]' ordering-type='Field' />
+      </column-instance>
+      <column-instance column='[Calculation_1716953919598594]' derivation='User' name='[usr:Calculation_1716953919598594:qk:3]' pivot='key' type='quantitative'>
+        <table-calc ordering-type='CellInPane' />
+      </column-instance>
+      <column-instance column='[Calculation_1716953919598594]' derivation='User' name='[usr:Calculation_1716953919598594:qk]' pivot='key' type='quantitative'>
+        <table-calc ordering-type='Rows' />
+      </column-instance>
+      <extract _.fcp.VConnDownstreamExtractsWithWarnings.true...user-specific='false' count='-1' enabled='true' object-id='' units='records'>
+        <connection access_mode='readonly' author-locale='en_US' class='hyper' dbname='C:/Users/gusta/AppData/Local/Temp/TableauTemp/#TableauTemp_0m5cvk71wujhnj17il08k0lx9jpz.hyper' default-settings='hyper' schema='Extract' sslmode='' tablename='Extract' update-time='05/03/2026 09:48:17 PM' username='tableau_internal_user'>
+          <relation name='Extract' table='[Extract].[Extract]' type='table' />
+          <metadata-records>
+            <metadata-record class='column'>
+              <remote-name>month</remote-name>
+              <remote-type>133</remote-type>
+              <local-name>[month]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>month</remote-alias>
+              <ordinal>0</ordinal>
+              <family>AB_SK_production.csv</family>
+              <local-type>date</local-type>
+              <aggregation>Year</aggregation>
+              <approx-count>315</approx-count>
+              <contains-null>true</contains-null>
+              <object-id>[AB_SK_production.csv_52ACD3CA4177461F9D5499210B159F3C]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>oil_type</remote-name>
+              <remote-type>129</remote-type>
+              <local-name>[oil_type]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>oil_type</remote-alias>
+              <ordinal>1</ordinal>
+              <family>AB_SK_production.csv</family>
+              <local-type>string</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>7</approx-count>
+              <contains-null>true</contains-null>
+              <collation flag='0' name='LEN_RGB' />
+              <object-id>[AB_SK_production.csv_52ACD3CA4177461F9D5499210B159F3C]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>avg_cubic_meters_per_day</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[avg_cubic_meters_per_day]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>avg_cubic_meters_per_day</remote-alias>
+              <ordinal>2</ordinal>
+              <family>AB_SK_production.csv</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>2189</approx-count>
+              <contains-null>true</contains-null>
+              <object-id>[AB_SK_production.csv_52ACD3CA4177461F9D5499210B159F3C]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>avg_barrels_per_day</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[avg_barrels_per_day]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>avg_barrels_per_day</remote-alias>
+              <ordinal>3</ordinal>
+              <family>AB_SK_production.csv</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>2189</approx-count>
+              <contains-null>true</contains-null>
+              <object-id>[AB_SK_production.csv_52ACD3CA4177461F9D5499210B159F3C]</object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>constraint_category</remote-name>
+              <remote-type>129</remote-type>
+              <local-name>[constraint_category]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>constraint_category</remote-alias>
+              <ordinal>4</ordinal>
+              <family>AB_SK_production.csv</family>
+              <local-type>string</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>4</approx-count>
+              <contains-null>true</contains-null>
+              <collation flag='0' name='LEN_RGB' />
+              <object-id>[AB_SK_production.csv_52ACD3CA4177461F9D5499210B159F3C]</object-id>
+            </metadata-record>
+          </metadata-records>
+        </connection>
+      </extract>
+      <layout dim-ordering='alphabetic' measure-ordering='alphabetic' show-structure='true' />
+      <style>
+        <style-rule element='mark'>
+          <encoding attr='color' field='[none:Calculation_1716953914474496:nk]' type='palette'>
+            <map to='#4e79a7'>
+              <bucket>&quot;Constrained&quot;</bucket>
+            </map>
+            <map to='#76b7b2'>
+              <bucket>&quot;Unconstrained&quot;</bucket>
+            </map>
+            <map to='#e15759'>
+              <bucket>&quot;Support&quot;</bucket>
+            </map>
+            <map to='#f28e2b'>
+              <bucket>&quot;Semi-Constained&quot;</bucket>
+            </map>
+          </encoding>
+          <encoding attr='color' field='[:Measure Names]' type='palette'>
+            <map to='#4e79a7'>
+              <bucket>&quot;[federated.09z36q81koeg4k14gl2zw13te9pa].[usr:Calculation_1716953919598594:qk:2]&quot;</bucket>
+            </map>
+            <map to='#4e79a7'>
+              <bucket>&quot;[federated.09z36q81koeg4k14gl2zw13te9pa].[usr:Calculation_1716953919598594:qk:3]&quot;</bucket>
+            </map>
+            <map to='#4e79a7'>
+              <bucket>&quot;[federated.09z36q81koeg4k14gl2zw13te9pa].[usr:Calculation_1716953919598594:qk]&quot;</bucket>
+            </map>
+          </encoding>
+        </style-rule>
+      </style>
+      <semantic-values>
+        <semantic-value key='[Country].[Name]' value='&quot;Canada&quot;' />
+      </semantic-values>
+      <field-sort-info field-sort-order-type='custom-order'>
+        <field-sort-custom-order field='month' />
+        <field-sort-custom-order field='oil_type' />
+        <field-sort-custom-order field='Calculation_1716953914593281' />
+        <field-sort-custom-order field='avg_cubic_meters_per_day' />
+        <field-sort-custom-order field='avg_barrels_per_day' />
+        <field-sort-custom-order field='constraint_category' />
+        <field-sort-custom-order field='Calculation_1716953914474496' />
+        <field-sort-custom-order field='Geometry (generated)' />
+        <field-sort-custom-order field='Latitude (generated)' />
+        <field-sort-custom-order field='Longitude (generated)' />
+        <field-sort-custom-order field=':Measure Names' />
+        <field-sort-custom-order field='Multiple Values' />
+      </field-sort-info>
+      <object-graph>
+        <objects>
+          <object caption='AB_SK_production.csv' id='AB_SK_production.csv_52ACD3CA4177461F9D5499210B159F3C'>
+            <properties context=''>
+              <relation connection='textscan.1o5mils10fdr5012kuwbg03co08w' name='AB_SK_production.csv' table='[AB_SK_production#csv]' type='table'>
+                <columns character-set='UTF-8' header='yes' locale='en_CA' separator=','>
+                  <column datatype='date' name='month' ordinal='0' />
+                  <column datatype='string' name='oil_type' ordinal='1' />
+                  <column datatype='real' name='avg_cubic_meters_per_day' ordinal='2' />
+                  <column datatype='real' name='avg_barrels_per_day' ordinal='3' />
+                  <column datatype='string' name='constraint_category' ordinal='4' />
+                </columns>
+              </relation>
+            </properties>
+            <properties context='extract'>
+              <relation name='Extract' table='[Extract].[Extract]' type='table' />
+            </properties>
+          </object>
+        </objects>
+      </object-graph>
+    </datasource>
+    <datasource caption='AB_SK_cubic_meters_per_day' inline='true' name='federated.0nec33t1cce16r13qtn871852opu' version='18.1'>
+      <connection class='federated'>
+        <named-connections>
+          <named-connection caption='AB_SK_cubic_meters_per_day' name='textscan.0lb0q0x15nbzii1batxtb0w5fteu'>
+            <connection class='textscan' directory='C:/Users/gusta/local/Personal/alberta-oil/project/data/transformed' filename='AB_SK_cubic_meters_per_day.csv' password='' server='' workgroup-auth-mode='as-is' />
+          </named-connection>
+        </named-connections>
+        <relation connection='textscan.0lb0q0x15nbzii1batxtb0w5fteu' name='AB_SK_cubic_meters_per_day.csv' table='[AB_SK_cubic_meters_per_day#csv]' type='table'>
+          <columns character-set='UTF-8' header='yes' locale='en_CA' separator=','>
+            <column datatype='date' name='month' ordinal='0' />
+            <column datatype='real' name='sk_light_avg' ordinal='1' />
+            <column datatype='real' name='sk_heavy_avg' ordinal='2' />
+            <column datatype='real' name='ab_conv_light_avg' ordinal='3' />
+            <column datatype='real' name='ab_conv_heavy_avg' ordinal='4' />
+            <column datatype='real' name='ab_upgraded_avg' ordinal='5' />
+            <column datatype='real' name='ab_non-upgraded_avg' ordinal='6' />
+            <column datatype='real' name='ab_cond_avg' ordinal='7' />
+          </columns>
+        </relation>
+        <metadata-records>
+          <metadata-record class='capability'>
+            <remote-name />
+            <remote-type>0</remote-type>
+            <parent-name>[AB_SK_cubic_meters_per_day.csv]</parent-name>
+            <remote-alias />
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='character-set'>&quot;UTF-8&quot;</attribute>
+              <attribute datatype='string' name='collation'>&quot;en_GB&quot;</attribute>
+              <attribute datatype='string' name='field-delimiter'>&quot;,&quot;</attribute>
+              <attribute datatype='string' name='header-row'>&quot;true&quot;</attribute>
+              <attribute datatype='string' name='locale'>&quot;en_CA&quot;</attribute>
+              <attribute datatype='string' name='single-char'>&quot;&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>month</remote-name>
+            <remote-type>133</remote-type>
+            <local-name>[month]</local-name>
+            <parent-name>[AB_SK_cubic_meters_per_day.csv]</parent-name>
+            <remote-alias>month</remote-alias>
+            <ordinal>0</ordinal>
+            <local-type>date</local-type>
+            <aggregation>Year</aggregation>
+            <contains-null>true</contains-null>
+            <object-id>[AB_SK_cubic_meters_per_day.csv_98A0689CE18E4DD0AF4C664C5A6F451D]</object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>sk_light_avg</remote-name>
+            <remote-type>5</remote-type>
+            <local-name>[sk_light_avg]</local-name>
+            <parent-name>[AB_SK_cubic_meters_per_day.csv]</parent-name>
+            <remote-alias>sk_light_avg</remote-alias>
+            <ordinal>1</ordinal>
+            <local-type>real</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <object-id>[AB_SK_cubic_meters_per_day.csv_98A0689CE18E4DD0AF4C664C5A6F451D]</object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>sk_heavy_avg</remote-name>
+            <remote-type>5</remote-type>
+            <local-name>[sk_heavy_avg]</local-name>
+            <parent-name>[AB_SK_cubic_meters_per_day.csv]</parent-name>
+            <remote-alias>sk_heavy_avg</remote-alias>
+            <ordinal>2</ordinal>
+            <local-type>real</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <object-id>[AB_SK_cubic_meters_per_day.csv_98A0689CE18E4DD0AF4C664C5A6F451D]</object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>ab_conv_light_avg</remote-name>
+            <remote-type>5</remote-type>
+            <local-name>[ab_conv_light_avg]</local-name>
+            <parent-name>[AB_SK_cubic_meters_per_day.csv]</parent-name>
+            <remote-alias>ab_conv_light_avg</remote-alias>
+            <ordinal>3</ordinal>
+            <local-type>real</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <object-id>[AB_SK_cubic_meters_per_day.csv_98A0689CE18E4DD0AF4C664C5A6F451D]</object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>ab_conv_heavy_avg</remote-name>
+            <remote-type>5</remote-type>
+            <local-name>[ab_conv_heavy_avg]</local-name>
+            <parent-name>[AB_SK_cubic_meters_per_day.csv]</parent-name>
+            <remote-alias>ab_conv_heavy_avg</remote-alias>
+            <ordinal>4</ordinal>
+            <local-type>real</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <object-id>[AB_SK_cubic_meters_per_day.csv_98A0689CE18E4DD0AF4C664C5A6F451D]</object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>ab_upgraded_avg</remote-name>
+            <remote-type>5</remote-type>
+            <local-name>[ab_upgraded_avg]</local-name>
+            <parent-name>[AB_SK_cubic_meters_per_day.csv]</parent-name>
+            <remote-alias>ab_upgraded_avg</remote-alias>
+            <ordinal>5</ordinal>
+            <local-type>real</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <object-id>[AB_SK_cubic_meters_per_day.csv_98A0689CE18E4DD0AF4C664C5A6F451D]</object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>ab_non-upgraded_avg</remote-name>
+            <remote-type>5</remote-type>
+            <local-name>[ab_non-upgraded_avg]</local-name>
+            <parent-name>[AB_SK_cubic_meters_per_day.csv]</parent-name>
+            <remote-alias>ab_non-upgraded_avg</remote-alias>
+            <ordinal>6</ordinal>
+            <local-type>real</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <object-id>[AB_SK_cubic_meters_per_day.csv_98A0689CE18E4DD0AF4C664C5A6F451D]</object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>ab_cond_avg</remote-name>
+            <remote-type>5</remote-type>
+            <local-name>[ab_cond_avg]</local-name>
+            <parent-name>[AB_SK_cubic_meters_per_day.csv]</parent-name>
+            <remote-alias>ab_cond_avg</remote-alias>
+            <ordinal>7</ordinal>
+            <local-type>real</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <object-id>[AB_SK_cubic_meters_per_day.csv_98A0689CE18E4DD0AF4C664C5A6F451D]</object-id>
+          </metadata-record>
+        </metadata-records>
+      </connection>
+      <aliases enabled='yes' />
+      <column caption='AB_SK_cubic_meters_per_day.csv' datatype='table' name='[__tableau_internal_object_id__].[AB_SK_cubic_meters_per_day.csv_98A0689CE18E4DD0AF4C664C5A6F451D]' role='measure' type='quantitative' />
+      <column aggregation='Avg' caption='Ab Cond Avg' datatype='real' name='[ab_cond_avg]' role='measure' type='quantitative' />
+      <column aggregation='Avg' caption='Ab Conv Heavy Avg' datatype='real' name='[ab_conv_heavy_avg]' role='measure' type='quantitative' />
+      <column aggregation='Avg' caption='Ab Conv Light Avg' datatype='real' name='[ab_conv_light_avg]' role='measure' type='quantitative' />
+      <column aggregation='Avg' caption='Ab Non-Upgraded Avg' datatype='real' name='[ab_non-upgraded_avg]' role='measure' type='quantitative' />
+      <column aggregation='Avg' caption='Ab Upgraded Avg' datatype='real' name='[ab_upgraded_avg]' role='measure' type='quantitative' />
+      <column caption='Month' datatype='date' name='[month]' role='dimension' type='ordinal' />
+      <column aggregation='Avg' caption='Sk Heavy Avg' datatype='real' name='[sk_heavy_avg]' role='measure' type='quantitative' />
+      <column aggregation='Avg' caption='Sk Light Avg' datatype='real' name='[sk_light_avg]' role='measure' type='quantitative' />
+      <column-instance column='[ab_non-upgraded_avg]' derivation='Sum' name='[sum:ab_non-upgraded_avg:qk]' pivot='key' type='quantitative' />
+      <column-instance column='[ab_upgraded_avg]' derivation='Sum' name='[sum:ab_upgraded_avg:qk]' pivot='key' type='quantitative' />
+      <extract _.fcp.VConnDownstreamExtractsWithWarnings.true...user-specific='false' count='-1' enabled='true' object-id='' units='records'>
+        <connection access_mode='readonly' author-locale='en_US' class='hyper' dbname='C:/Users/gusta/AppData/Local/Temp/TableauTemp/#TableauTemp_00cq52t1slbcmn1d1a2cy1ljyk82.hyper' default-settings='hyper' schema='Extract' sslmode='' tablename='Extract' update-time='05/03/2026 09:47:56 PM' username='tableau_internal_user'>
+          <relation name='Extract' table='[Extract].[Extract]' type='table' />
+          <metadata-records>
+            <metadata-record class='column'>
+              <remote-name>month</remote-name>
+              <remote-type>133</remote-type>
+              <local-name>[month]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>month</remote-alias>
+              <ordinal>0</ordinal>
+              <family>AB_SK_cubic_meters_per_day.csv</family>
+              <local-type>date</local-type>
+              <aggregation>Year</aggregation>
+              <approx-count>324</approx-count>
+              <contains-null>true</contains-null>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>sk_light_avg</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[sk_light_avg]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>sk_light_avg</remote-alias>
+              <ordinal>1</ordinal>
+              <family>AB_SK_cubic_meters_per_day.csv</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>313</approx-count>
+              <contains-null>true</contains-null>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>sk_heavy_avg</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[sk_heavy_avg]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>sk_heavy_avg</remote-alias>
+              <ordinal>2</ordinal>
+              <family>AB_SK_cubic_meters_per_day.csv</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>313</approx-count>
+              <contains-null>true</contains-null>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>ab_conv_light_avg</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[ab_conv_light_avg]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>ab_conv_light_avg</remote-alias>
+              <ordinal>3</ordinal>
+              <family>AB_SK_cubic_meters_per_day.csv</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>313</approx-count>
+              <contains-null>true</contains-null>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>ab_conv_heavy_avg</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[ab_conv_heavy_avg]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>ab_conv_heavy_avg</remote-alias>
+              <ordinal>4</ordinal>
+              <family>AB_SK_cubic_meters_per_day.csv</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>314</approx-count>
+              <contains-null>true</contains-null>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>ab_upgraded_avg</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[ab_upgraded_avg]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>ab_upgraded_avg</remote-alias>
+              <ordinal>5</ordinal>
+              <family>AB_SK_cubic_meters_per_day.csv</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>314</approx-count>
+              <contains-null>true</contains-null>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>ab_non-upgraded_avg</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[ab_non-upgraded_avg]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>ab_non-upgraded_avg</remote-alias>
+              <ordinal>6</ordinal>
+              <family>AB_SK_cubic_meters_per_day.csv</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>314</approx-count>
+              <contains-null>true</contains-null>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>ab_cond_avg</remote-name>
+              <remote-type>5</remote-type>
+              <local-name>[ab_cond_avg]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>ab_cond_avg</remote-alias>
+              <ordinal>7</ordinal>
+              <family>AB_SK_cubic_meters_per_day.csv</family>
+              <local-type>real</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>314</approx-count>
+              <contains-null>true</contains-null>
+            </metadata-record>
+          </metadata-records>
+        </connection>
+      </extract>
+      <layout dim-ordering='alphabetic' measure-ordering='alphabetic' show-structure='true' />
+      <style>
+        <style-rule element='mark'>
+          <encoding attr='color' field='[:Measure Names]' type='palette'>
+            <map to='#4e79a7'>
+              <bucket>&quot;[federated.0nec33t1cce16r13qtn871852opu].[sum:ab_non-upgraded_avg:qk]&quot;</bucket>
+            </map>
+            <map to='#e15759'>
+              <bucket>&quot;[federated.0nec33t1cce16r13qtn871852opu]&quot;</bucket>
+            </map>
+            <map to='#f28e2b'>
+              <bucket>&quot;[federated.0nec33t1cce16r13qtn871852opu].[sum:ab_upgraded_avg:qk]&quot;</bucket>
+            </map>
+          </encoding>
+        </style-rule>
+      </style>
+      <semantic-values>
+        <semantic-value key='[Country].[Name]' value='&quot;Canada&quot;' />
+      </semantic-values>
+      <object-graph>
+        <objects>
+          <object caption='AB_SK_cubic_meters_per_day.csv' id='AB_SK_cubic_meters_per_day.csv_98A0689CE18E4DD0AF4C664C5A6F451D'>
+            <properties context=''>
+              <relation connection='textscan.0lb0q0x15nbzii1batxtb0w5fteu' name='AB_SK_cubic_meters_per_day.csv' table='[AB_SK_cubic_meters_per_day#csv]' type='table'>
+                <columns character-set='UTF-8' header='yes' locale='en_CA' separator=','>
+                  <column datatype='date' name='month' ordinal='0' />
+                  <column datatype='real' name='sk_light_avg' ordinal='1' />
+                  <column datatype='real' name='sk_heavy_avg' ordinal='2' />
+                  <column datatype='real' name='ab_conv_light_avg' ordinal='3' />
+                  <column datatype='real' name='ab_conv_heavy_avg' ordinal='4' />
+                  <column datatype='real' name='ab_upgraded_avg' ordinal='5' />
+                  <column datatype='real' name='ab_non-upgraded_avg' ordinal='6' />
+                  <column datatype='real' name='ab_cond_avg' ordinal='7' />
+                </columns>
+              </relation>
+            </properties>
+            <properties context='extract'>
+              <relation name='Extract' table='[Extract].[Extract]' type='table' />
+            </properties>
+          </object>
+        </objects>
+      </object-graph>
+    </datasource>
+  </datasources>
+  <worksheets>
+    <worksheet name='Sheet 1'>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='AB_SK_production' name='federated.09z36q81koeg4k14gl2zw13te9pa' />
+          </datasources>
+          <datasource-dependencies datasource='federated.09z36q81koeg4k14gl2zw13te9pa'>
+            <column caption='Constraint Category Proper' datatype='string' name='[Calculation_1716953914474496]' role='dimension' type='nominal'>
+              <calculation class='tableau' formula='PROPER([constraint_category])' />
+            </column>
+            <column caption='12M Rolling Avg' datatype='real' name='[Calculation_1716953919598594]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='WINDOW_AVG(SUM([avg_barrels_per_day]), -11, 0)'>
+                <table-calc ordering-type='Rows' />
+              </calculation>
+            </column>
+            <column caption='Avg Barrels Per Day' datatype='real' name='[avg_barrels_per_day]' role='dimension' type='quantitative' />
+            <column caption='Constraint Category' datatype='string' name='[constraint_category]' role='dimension' type='nominal' />
+            <column caption='Month' datatype='date' name='[month]' role='dimension' type='ordinal' />
+            <column-instance column='[Calculation_1716953914474496]' derivation='None' name='[none:Calculation_1716953914474496:nk]' pivot='key' type='nominal' />
+            <column-instance column='[avg_barrels_per_day]' derivation='Sum' name='[sum:avg_barrels_per_day:qk]' pivot='key' type='quantitative' />
+            <column-instance column='[month]' derivation='Month-Trunc' name='[tmn:month:qk]' pivot='key' type='quantitative' />
+            <column-instance column='[Calculation_1716953919598594]' derivation='User' name='[usr:Calculation_1716953919598594:qk]' pivot='key' type='quantitative'>
+              <table-calc ordering-type='Rows' />
+            </column-instance>
+            <column-instance column='[month]' derivation='Year' name='[yr:month:ok]' pivot='key' type='ordinal' />
+          </datasource-dependencies>
+          <filter class='categorical' column='[federated.09z36q81koeg4k14gl2zw13te9pa].[none:Calculation_1716953914474496:nk]'>
+            <groupfilter function='union' user:ui-domain='database' user:ui-enumeration='inclusive' user:ui-marker='enumerate'>
+              <groupfilter function='member' level='[none:Calculation_1716953914474496:nk]' member='&quot;Constrained&quot;' />
+              <groupfilter function='member' level='[none:Calculation_1716953914474496:nk]' member='&quot;Semi-Constained&quot;' />
+              <groupfilter function='member' level='[none:Calculation_1716953914474496:nk]' member='&quot;Unconstrained&quot;' />
+            </groupfilter>
+          </filter>
+          <filter class='categorical' column='[federated.09z36q81koeg4k14gl2zw13te9pa].[yr:month:ok]'>
+            <groupfilter function='union' user:ui-domain='database' user:ui-enumeration='inclusive' user:ui-marker='enumerate'>
+              <groupfilter function='member' level='[yr:month:ok]' member='2018' />
+              <groupfilter function='member' level='[yr:month:ok]' member='2019' />
+              <groupfilter function='member' level='[yr:month:ok]' member='2020' />
+              <groupfilter function='member' level='[yr:month:ok]' member='2021' />
+              <groupfilter function='member' level='[yr:month:ok]' member='2022' />
+              <groupfilter function='member' level='[yr:month:ok]' member='2023' />
+              <groupfilter function='member' level='[yr:month:ok]' member='2024' />
+              <groupfilter function='member' level='[yr:month:ok]' member='2025' />
+            </groupfilter>
+          </filter>
+          <slices>
+            <column>[federated.09z36q81koeg4k14gl2zw13te9pa].[yr:month:ok]</column>
+            <column>[federated.09z36q81koeg4k14gl2zw13te9pa].[none:Calculation_1716953914474496:nk]</column>
+          </slices>
+          <aggregation value='true' />
+        </view>
+        <style>
+          <style-rule element='axis'>
+            <encoding attr='space' class='0' field='[federated.09z36q81koeg4k14gl2zw13te9pa].[usr:Calculation_1716953919598594:qk]' field-type='quantitative' fold='true' scope='rows' synchronized='true' type='space' />
+            <format attr='display' class='0' field='[federated.09z36q81koeg4k14gl2zw13te9pa].[usr:Calculation_1716953919598594:qk]' scope='rows' value='false' />
+          </style-rule>
+        </style>
+        <panes>
+          <pane id='2' selection-relaxation-option='selection-relaxation-allow'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Bar' />
+            <mark-sizing custom-mark-size-in-axis-units='1.0' mark-alignment='mark-alignment-left' mark-sizing-setting='marks-scaling-on' use-custom-mark-size='false' />
+            <encodings>
+              <color column='[federated.09z36q81koeg4k14gl2zw13te9pa].[none:Calculation_1716953914474496:nk]' />
+            </encodings>
+            <style>
+              <style-rule element='mark'>
+                <format attr='mark-labels-show' value='true' />
+                <format attr='mark-labels-cull' value='true' />
+              </style-rule>
+              <style-rule element='pane'>
+                <format attr='minwidth' value='-1' />
+                <format attr='maxwidth' value='-1' />
+              </style-rule>
+            </style>
+          </pane>
+          <pane id='3' selection-relaxation-option='selection-relaxation-allow' y-axis-name='[federated.09z36q81koeg4k14gl2zw13te9pa].[sum:avg_barrels_per_day:qk]'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Bar' />
+            <mark-sizing custom-mark-size-in-axis-units='1.0' mark-alignment='mark-alignment-left' mark-sizing-setting='marks-scaling-on' use-custom-mark-size='false' />
+            <encodings>
+              <color column='[federated.09z36q81koeg4k14gl2zw13te9pa].[none:Calculation_1716953914474496:nk]' />
+              <lod column='[federated.09z36q81koeg4k14gl2zw13te9pa].[none:Calculation_1716953914474496:nk]' />
+              <color column='[federated.09z36q81koeg4k14gl2zw13te9pa].[:Measure Names]' />
+            </encodings>
+            <style>
+              <style-rule element='mark'>
+                <format attr='mark-labels-show' value='true' />
+                <format attr='mark-labels-cull' value='true' />
+              </style-rule>
+              <style-rule element='pane'>
+                <format attr='minwidth' value='-1' />
+                <format attr='maxwidth' value='-1' />
+              </style-rule>
+            </style>
+          </pane>
+          <pane id='4' selection-relaxation-option='selection-relaxation-allow' y-axis-name='[federated.09z36q81koeg4k14gl2zw13te9pa].[usr:Calculation_1716953919598594:qk]'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Line' />
+            <encodings>
+              <color column='[federated.09z36q81koeg4k14gl2zw13te9pa].[none:Calculation_1716953914474496:nk]' />
+            </encodings>
+            <style>
+              <style-rule element='mark'>
+                <format attr='mark-labels-cull' value='true' />
+                <format attr='mark-labels-show' value='false' />
+                <format attr='mark-color' value='#000000' />
+              </style-rule>
+              <style-rule element='pane'>
+                <format attr='minwidth' value='-1' />
+                <format attr='maxwidth' value='-1' />
+              </style-rule>
+            </style>
+          </pane>
+        </panes>
+        <rows>([federated.09z36q81koeg4k14gl2zw13te9pa].[sum:avg_barrels_per_day:qk] + [federated.09z36q81koeg4k14gl2zw13te9pa].[usr:Calculation_1716953919598594:qk])</rows>
+        <cols>[federated.09z36q81koeg4k14gl2zw13te9pa].[tmn:month:qk]</cols>
+      </table>
+      <simple-id uuid='{A5464ECF-A086-4451-AA56-5640AD7CB054}' />
+    </worksheet>
+  </worksheets>
+  <windows source-height='51'>
+    <window class='worksheet' maximized='true' name='Sheet 1'>
+      <cards>
+        <edge name='left'>
+          <strip size='160'>
+            <card size='26' type='pages' />
+            <card size='43' type='filters' />
+            <card size='173' type='marks' />
+          </strip>
+        </edge>
+        <edge name='top'>
+          <strip size='2147483647'>
+            <card type='columns' />
+          </strip>
+          <strip size='2147483647'>
+            <card type='rows' />
+          </strip>
+          <strip size='2147483647'>
+            <card type='title' />
+          </strip>
+        </edge>
+        <edge name='right'>
+          <strip size='160'>
+            <card pane-specification-id='3' param='[federated.09z36q81koeg4k14gl2zw13te9pa].[none:Calculation_1716953914474496:nk]&#10;[federated.09z36q81koeg4k14gl2zw13te9pa].[:Measure Names]' type='color' />
+            <card pane-specification-id='4' param='[federated.09z36q81koeg4k14gl2zw13te9pa].[none:Calculation_1716953914474496:nk]' type='color' />
+          </strip>
+        </edge>
+      </cards>
+      <viewpoint>
+        <zoom type='fit-width' />
+        <selection-collection>
+          <node-selection select-tuples='false'>
+            <oriented-node-reference orientation='vertical'>
+              <node-reference>
+                <axis>[federated.09z36q81koeg4k14gl2zw13te9pa].[usr:Calculation_1716953919598594:qk]</axis>
+              </node-reference>
+              <page-reference />
+            </oriented-node-reference>
+          </node-selection>
+        </selection-collection>
+        <highlight>
+          <color-one-way>
+            <field>[federated.09z36q81koeg4k14gl2zw13te9pa].[:Measure Names]</field>
+            <field>[federated.09z36q81koeg4k14gl2zw13te9pa].[none:Calculation_1716953914474496:nk]</field>
+            <field>[federated.09z36q81koeg4k14gl2zw13te9pa].[none:Calculation_1716953914593281:nk]</field>
+            <field>[federated.09z36q81koeg4k14gl2zw13te9pa].[none:avg_barrels_per_day:qk]</field>
+            <field>[federated.09z36q81koeg4k14gl2zw13te9pa].[yr:month:ok]</field>
+            <field>[federated.0nec33t1cce16r13qtn871852opu].[yr:month:ok]</field>
+          </color-one-way>
+        </highlight>
+      </viewpoint>
+      <simple-id uuid='{487941BB-CB21-4171-8259-FF1FDEA8ECA2}' />
+    </window>
+  </windows>
+  <thumbnails>
+    <thumbnail height='192' name='Sheet 1' width='192'>
+      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
+    </thumbnail>
+  </thumbnails>
+</workbook>

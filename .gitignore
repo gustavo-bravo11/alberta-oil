@@ -2,3 +2,5 @@ alberta-oil-env/
 
 *.csv
 *.xlsx
+
+__pycache__/

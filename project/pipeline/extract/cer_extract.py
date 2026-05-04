@@ -17,7 +17,7 @@ This file will be used to extract the data from this website. Since the file
 is available via spreadsheets, we have to scrape the website, to find the
 latest available data.
 """
-from pipeline.utils.web_download import cer_extrat
+from pipeline.utils.web_download import safe_request_get, download_file, find_file_url
 from pathlib import Path
 
 # Constants, pages and output directory
@@ -52,11 +52,25 @@ def main():
     file content and write it to disk.
     """
     for source in SOURCES:
-        cer_extrat(
+        cer_response = safe_request_get(url=source["url"])
+        if not cer_response: return
+
+        excel_url = find_file_url(
+            response=cer_response, 
             url=source["url"],
-            extensions=source["file_extensions"],
-            save_dir=RAW_BUCKET
+            extensions=source["file_extensions"]
         )
+        if not excel_url: return
+
+        excel_response = safe_request_get(url=excel_url)
+        if not excel_response: return
+
+        if download_file(
+            response=excel_response,
+            file_url=excel_url,
+            output_dir=RAW_BUCKET
+        ):
+            print("Successfully downloaded:", excel_url.split("/")[-1], "to disk.")
 
 if __name__ == "__main__":
     main()

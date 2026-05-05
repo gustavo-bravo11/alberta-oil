@@ -15,7 +15,11 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 
-def download_file(response: Response, file_url:str, output_dir: Path) -> bool:
+def download_file(
+        response: Response, 
+        file_url:str, 
+        output_name:str,
+        output_dir: Path) -> bool:
     """
     This function simply downloads the content, which comes in binary
     from the Response type, and saves it as a workbook.
@@ -25,12 +29,12 @@ def download_file(response: Response, file_url:str, output_dir: Path) -> bool:
     @args:
         - file_url: the download link.
         - reponse: the reponse from the request method.
+        - output_name: the name of the saved file.
         - output path: where the file will be saved.
 
     @returns True if donwload was successful, false if an exception is caught.
     """
-    file_name = file_url.split("/")[-1]
-    output_path = output_dir / file_name
+    output_path = output_dir / output_name
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     try:
@@ -38,10 +42,10 @@ def download_file(response: Response, file_url:str, output_dir: Path) -> bool:
             f.write(response.content)
         return True
     except PermissionError:
-        print(f"Permission error for output file: {file_name}")
+        print(f"Permission error for output file: {output_name}")
 
     except OSError:
-        print(f"Disk error when writing: {file_name}")
+        print(f"Disk error when writing: {output_name}")
     
     return False
 

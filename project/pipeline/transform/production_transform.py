@@ -84,7 +84,6 @@ def main():
         .alias('constraint_category')
     )
 
-    # unpivoted_ouput_name = "AB_SK_production.csv"
     unpivoted_df.write_csv(
         file=TRANSFORMED_BUCKET / CER_PRODUCTION["unpivoted_filename"]
     )

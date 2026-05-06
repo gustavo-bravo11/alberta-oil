@@ -4,8 +4,7 @@ CER_PRODUCTION = {
     "file_extensions": (".xlsx", ".xls"),
     "sheet_name": "HIST - cubic meters per day",
     "raw_filename": "cer_estimated_production_details.xlsx",
-    "pivoted_filename": "cer_western_canada_estimated_production.csv",
-    "unpivoted_filename": "cer_western_canada_estimated_production_long.csv",
+    "output_filename": "western_canada_estimated_production.csv",
 }
 
 CER_PIPELINE_SOURCES = [

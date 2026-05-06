@@ -40,11 +40,6 @@ def main():
             pl.col('ab_cond').cast(pl.Float64),
         ])
 
-    df.write_csv(
-        file= TRANSFORMED_BUCKET / CER_PRODUCTION["pivoted_filename"]
-    )
-    print("Successfully transformed: pivoted production table.")
-
     """
         Now we pivot the data to long format for our actual table, 
         we also converting it to barrels.
@@ -64,11 +59,11 @@ def main():
         on=['sk_light', 'sk_heavy', 'ab_conv_light', 'ab_conv_heavy', 'ab_upgraded', 'ab_non_upgraded', 'ab_cond'],
         index='month',
         variable_name='oil_type',
-        value_name='avg_cubic_meters_per_day',   
+        value_name='m3_per_day',   
     ).filter(
-        pl.col('avg_cubic_meters_per_day').is_not_null()
+        pl.col('m3_per_day').is_not_null()
     ).with_columns(
-        (pl.col('avg_cubic_meters_per_day')*CUBIC_M_TO_BARRELS).alias('avg_barrels_per_day')
+        (pl.col('m3_per_day')*CUBIC_M_TO_BARRELS).alias('barrels_per_day')
     ).with_columns(
         pl.when(
             pl.col('oil_type').str.contains('heavy') | 
@@ -85,9 +80,9 @@ def main():
     )
 
     unpivoted_df.write_csv(
-        file=TRANSFORMED_BUCKET / CER_PRODUCTION["unpivoted_filename"]
+        file=TRANSFORMED_BUCKET / CER_PRODUCTION["output_filename"]
     )
-    print("Successfully transformed: unpivoted production data")
+    print(f"Successfully transformed: {CER_PRODUCTION["output_filename"]}")
 
 if __name__ == "__main__":
     main()

@@ -39,7 +39,8 @@ def main():
             "trade_type",
             "product",
             "throughput_1000_m3_d",
-            "available_capacity_1000_m3_d"
+            "available_capacity_1000_m3_d",
+            "reason_for_variance"
         ])
         .with_columns(
             (pl.col("throughput_1000_m3_d")*1000).alias("throughput_m3_d"),
@@ -57,12 +58,11 @@ def main():
     flow_lf = (
         lf
         .filter(pl.col("key_point") != 'system')
-        .drop(["available_capacity_m3_d", "available_capacity_barrels_d"])
+        .drop(["available_capacity_m3_d", "available_capacity_barrels_d", "reason_for_variance"])
     )
 
-    flow_lf.sink_csv(
-        path=TRANSFORMED_BUCKET / TRANSMOUNTAIN["flow_locations_filename"]
-    )
+    flow_lf.sink_csv(path=TRANSFORMED_BUCKET / TRANSMOUNTAIN["flow_locations_filename"])
+    print(f"Successfully transformed: {TRANSMOUNTAIN["flow_locations_filename"]}")
 
     # Now a table with the ability to calculate utilization rate
     # To do this, we'll need to split the frame into two, then group by and sum the flows, then join
@@ -73,7 +73,8 @@ def main():
             'date',
             'pipeline',
             'available_capacity_m3_d',
-            'available_capacity_barrels_d'
+            'available_capacity_barrels_d',
+            "reason_for_variance"
         ])
     )
 
@@ -87,9 +88,11 @@ def main():
         flow_lf.group_by(['date', 'pipeline'], maintain_order=True)
             .agg([
                 pl.col("throughput_m3_d").sum().alias("total_throughput_m3_d"),
-                pl.col("throughput_barrels_d").sum().alias("total_throughput_barrels_d")
+                pl.col("throughput_barrels_d").sum().alias("total_throughput_barrels_d"),
+                pl.col("key_point").unique().sort().str.join(", ").alias("capacity_basis")
             ])
     )
+
     throughput_lf = (
         total_flow_lf.join(
             other=capacity_lf,
@@ -97,16 +100,13 @@ def main():
             validate="1:1"
         )
         .with_columns(
-            (
-                pl.col("total_throughput_m3_d")
-                / pl.col("available_capacity_m3_d")
-            ).alias("reported_available_capacity_utlization")
+            (pl.col("total_throughput_m3_d") / pl.col("available_capacity_m3_d"))
+            .alias("reported_available_capacity_utlization")
         )
     )
 
-    throughput_lf.sink_csv(
-        path=TRANSFORMED_BUCKET / TRANSMOUNTAIN["capacity_filename"]
-    )
+    throughput_lf.sink_csv(path=TRANSFORMED_BUCKET / TRANSMOUNTAIN["capacity_filename"])
+    print(f"Successfully transformed: {TRANSMOUNTAIN["capacity_filename"]}")
 
 
 if __name__ == "__main__":

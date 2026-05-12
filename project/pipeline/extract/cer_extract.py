@@ -18,7 +18,7 @@ is available via spreadsheets, we have to scrape the website, to find the
 latest available data.
 """
 from pipeline.utils.web_download import safe_request_get, download_file, find_file_url
-from pipeline.config.sources import CER_PRODUCTION, CER_PIPELINE_SOURCES
+from pipeline.config.sources import CER_PRODUCTION, CER_PIPELINE_SOURCES, CER_RAIL_EXPORTS
 from pipeline.config.settings import RAW_BUCKET
 
 from pathlib import Path
@@ -29,7 +29,7 @@ def main():
     Open the CER website, look for the xlsx file, then get the 
     file content and write it to disk.
     """
-    sources = [CER_PRODUCTION] + CER_PIPELINE_SOURCES
+    sources = [CER_PRODUCTION] + CER_PIPELINE_SOURCES + [CER_RAIL_EXPORTS]
 
     for source in sources:
         cer_response = safe_request_get(url=source["source_page_url"])

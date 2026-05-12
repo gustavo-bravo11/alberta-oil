@@ -33,3 +33,12 @@ CER_PIPELINE_SOURCES = [
         "capacity_filename": "transmountain_capacity.csv"
     },
 ]
+
+CER_RAIL_EXPORTS = {
+    "name": "cer_rail",
+    "source_page_url": "https://www.cer-rec.gc.ca/en/data-analysis/energy-commodities/crude-oil-petroleum-products/statistics/canadian-crude-oil-exports-rail-monthly-data.html",
+    "file_extensions": (".xlsx", ".xls"),
+    "sheet_name": "CrudeOilExportsByRail",
+    "raw_filename": "cer_rail_exports_monthly_raw.xlsx",
+    "output_filename": "monthyl_rail_exports.csv",
+}

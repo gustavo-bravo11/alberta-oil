@@ -14,7 +14,6 @@ from pipeline.config.settings import RAW_BUCKET, TRANSFORMED_BUCKET, CUBIC_M_TO_
 from pipeline.config.sources import CER_PRODUCTION
 
 import polars as pl
-from pathlib import Path
 
 def main():
     file_path = RAW_BUCKET / CER_PRODUCTION["raw_filename"]

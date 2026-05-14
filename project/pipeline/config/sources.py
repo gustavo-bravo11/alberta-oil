@@ -40,5 +40,5 @@ CER_RAIL_EXPORTS = {
     "file_extensions": (".xlsx", ".xls"),
     "sheet_name": "CrudeOilExportsByRail",
     "raw_filename": "cer_rail_exports_monthly_raw.xlsx",
-    "output_filename": "monthyl_rail_exports.csv",
+    "output_filename": "monthly_rail_exports.csv",
 }

@@ -6,14 +6,17 @@ the capacity on there, here, we have all rows with
 the capacity. However, the top of the script will
 be identical.
 """
-from pipeline.config.settings import RAW_BUCKET, TRANSFORMED_BUCKET, CUBIC_M_TO_BARRELS
+from pipeline.config.settings import RAW_BUCKET, THROUGHPUT_STAGE_1, CUBIC_M_TO_BARRELS
 from pipeline.config.sources import CER_PIPELINE_SOURCES
 
 import polars as pl
+import os
 
 KEYSTONE = CER_PIPELINE_SOURCES[1]
 
 def main():
+    os.makedirs(THROUGHPUT_STAGE_1, exist_ok=True)
+    
     # First we'll create a base lazy frame that we'll use for both outputs
     lf = (
         pl.scan_csv(
@@ -61,7 +64,7 @@ def main():
         .drop(["available_capacity_m3_d", "available_capacity_barrels_d", "reason_for_variance"])
     )
 
-    flow_lf.sink_csv(path=TRANSFORMED_BUCKET / KEYSTONE["flow_locations_filename"])
+    flow_lf.sink_csv(path=THROUGHPUT_STAGE_1 / KEYSTONE["flow_locations_filename"])
     print(f"Successfully transformed: {KEYSTONE["flow_locations_filename"]}")
 
     """
@@ -90,7 +93,7 @@ def main():
         .rename({"key_point": "capacity_basis"})
     )
 
-    throughput_lf.sink_csv(path=TRANSFORMED_BUCKET / KEYSTONE["capacity_filename"])
+    throughput_lf.sink_csv(path=THROUGHPUT_STAGE_1 / KEYSTONE["capacity_filename"])
     print(f"Successfully transformed: {KEYSTONE["capacity_filename"]}")
 
 

@@ -54,6 +54,7 @@ def main():
     df.write_csv(
         file=TRANSFORMED_BUCKET/CER_RAIL_EXPORTS['output_filename']
     )
+    print("Successfully transformed:", TRANSFORMED_BUCKET/CER_RAIL_EXPORTS['output_filename'])
 
 
 def clean_column_names(col:str) -> str:

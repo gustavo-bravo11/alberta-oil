@@ -67,14 +67,14 @@ def main():
         pl.when(
             pl.col('oil_type').str.contains('heavy') | 
             pl.col('oil_type').str.contains('non-upgraded'))
-        .then(pl.lit('Constrained'))
+        .then(pl.lit('constrained'))
         .when(pl.col('oil_type').str.contains('upgraded'))
-        .then(pl.lit('Semi-Constrained'))
+        .then(pl.lit('semi_constrained'))
         .when(pl.col('oil_type').str.contains('light'))
-        .then(pl.lit('Unconstrained'))
+        .then(pl.lit('unconstrained'))
         .when(pl.col('oil_type').str.contains('cond'))
-        .then(pl.lit('Support'))
-        .otherwise(pl.lit('Other'))
+        .then(pl.lit('support'))
+        .otherwise(pl.lit('other'))
         .alias('constraint_category')
     )
 

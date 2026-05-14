@@ -12,14 +12,17 @@ but my assumption is that when the capacity is low, and it's a short
 distance, they do not include the PL capacity. We will retain it
 in the flows, but not for the utilization rate calculation.
 """
-from pipeline.config.settings import RAW_BUCKET, TRANSFORMED_BUCKET, CUBIC_M_TO_BARRELS
+from pipeline.config.settings import RAW_BUCKET, CUBIC_M_TO_BARRELS, THROUGHPUT_STAGE_1
 from pipeline.config.sources import CER_PIPELINE_SOURCES
 
 import polars as pl
+import os
 
 ENBRIDGE = CER_PIPELINE_SOURCES[0]
 
 def main():
+    os.makedirs(THROUGHPUT_STAGE_1, exist_ok=True)
+
     # We need to drop the system row because it's basically useless here
     lf = (
         pl.scan_csv(
@@ -69,7 +72,7 @@ def main():
         .drop(["available_capacity_m3_d", "available_capacity_barrels_d"])
     )
 
-    flow_lf.sink_csv(path=TRANSFORMED_BUCKET / ENBRIDGE["flow_locations_filename"])
+    flow_lf.sink_csv(path=THROUGHPUT_STAGE_1 / ENBRIDGE["flow_locations_filename"])
     print(f"Successfully transformed: {ENBRIDGE["flow_locations_filename"]}")
 
     """
@@ -101,7 +104,8 @@ def main():
         .rename({"key_point": "capacity_basis"})
     )
 
-    throughput_lf.sink_csv(path=TRANSFORMED_BUCKET / ENBRIDGE["capacity_filename"])
+
+    throughput_lf.sink_csv(path=THROUGHPUT_STAGE_1 / ENBRIDGE["capacity_filename"])
     print(f"Successfully transformed: {ENBRIDGE["capacity_filename"]}")
 
 

@@ -62,7 +62,11 @@ def main():
         )
         .drop(["throughput_1000_m3_d", "available_capacity_1000_m3_d"])
         .with_columns(
-            pl.col("pipeline").str.to_titlecase().alias("pipeline")
+            pl.col("pipeline")
+            .str.replace_all(r"[\r\n]+", " ")
+            .str.replace_all(r"\s{2,}", " ")
+            .str.strip_chars()
+            .str.to_titlecase().alias("pipeline")
         )
     )
 

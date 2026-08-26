@@ -11,7 +11,7 @@ To start we wil scrape the data from the available spreadsheets of:
 
     - Estimated Production of Canadian Crude Oil and Equivalent
     - Crude Oil Export Summary
-    - North American Crude Oil Refinery
+    - North American Crude Oil Refinery - Not Implemmented
 
 This file will be used to extract the data from this website. Since the file
 is available via spreadsheets, we have to scrape the website, to find the
@@ -28,6 +28,8 @@ def main():
     """
     Open the CER website, look for the xlsx file, then get the 
     file content and write it to disk.
+
+    Does this for all the files in the sources by appending each list together.
     """
     sources = [CER_PRODUCTION] + CER_PIPELINE_SOURCES + [CER_RAIL_EXPORTS]
 

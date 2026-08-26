@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: alberta_oil_postgres
+    environment:
+      POSTGRES_DB: ${POSGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGREST_PASSWORD: ${POSTGREST_PASSWORD}
+    ports:
+      - "${POSGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  flyway:
+    image: flyway/flyway:latest
+    container_name: alberta_oil_postgres
+    depends_on:
+      - postgres
+    volumes:
+      - ./db/migrations:/flyway/sql
+    command:
+      -url=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      -user=${POSTGRES_USER}
+      -password=${POSTGREST_PASSWORD}
+      -connectRetries=10
+      migrate
+
+volumes:
+  postgres_data:

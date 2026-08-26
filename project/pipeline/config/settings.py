@@ -11,8 +11,10 @@ TRANSFORMED_BUCKET = DATA_DIR / "transformed"
 THROUGHPUT_STAGE_1 = TRANSFORMED_BUCKET / "throughput_stage_1"
 
 # Stage 2 includes files
-THROUGHPUT_STAGE_2_FLOW = TRANSFORMED_BUCKET / "pipeline_flow.csv"
-THROUGHPUT_STAGE_2_CAPACITY = TRANSFORMED_BUCKET / "pipeline_capacity.csv"
+THROUGHPUT_STAGE_2 = TRANSFORMED_BUCKET / "throughput_stage_2"
+
+THROUGHPUT_STAGE_2_FLOW = THROUGHPUT_STAGE_2 / "pipeline_flow.csv"
+THROUGHPUT_STAGE_2_CAPACITY = THROUGHPUT_STAGE_2 / "pipeline_capacity.csv"
 
 # Constants between files
 CUBIC_M_TO_BARRELS = 6.2898

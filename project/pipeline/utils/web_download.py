@@ -7,6 +7,9 @@ Many of our extraction functions will be similar so the purpose of creating this
 class is to minimize the amount of code we write while ensuring all our extract
 functions work in a similar fashion.
 """
+import csv
+from datetime import datetime, timezone
+
 import requests
 
 from requests import Response
@@ -48,6 +51,26 @@ def download_file(
         print(f"Disk error when writing: {output_name}")
     
     return False
+
+
+def record_retrieval(source_name: str, raw_filename: str, retrieval_log: Path) -> None:
+    """Append the UTC retrieval timestamp for one successfully saved raw file."""
+    retrieval_log.parent.mkdir(parents=True, exist_ok=True)
+    write_header = not retrieval_log.exists() or retrieval_log.stat().st_size == 0
+    with retrieval_log.open("a", newline="", encoding="utf-8") as log_file:
+        writer = csv.DictWriter(
+            log_file,
+            fieldnames=("source_name", "raw_filename", "date_retrieved_utc"),
+        )
+        if write_header:
+            writer.writeheader()
+        writer.writerow(
+            {
+                "source_name": source_name,
+                "raw_filename": raw_filename,
+                "date_retrieved_utc": datetime.now(timezone.utc).isoformat(),
+            }
+        )
 
 
 def find_file_url(response:Response, url:str, extensions:tuple[str, ...]) -> str|None:

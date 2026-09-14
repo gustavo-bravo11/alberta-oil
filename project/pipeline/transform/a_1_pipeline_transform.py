@@ -14,11 +14,11 @@ in this module so they do not have to be maintained in three scripts.
 from __future__ import annotations
 
 import argparse
-
 import polars as pl
 
 from pipeline.config.settings import CUBIC_M_TO_BARRELS, RAW_BUCKET, THROUGHPUT_STAGE_1
 from pipeline.config.sources import CER_PIPELINE_SOURCES
+from pipeline.utils.timestamps import current_utc_timestamp
 
 
 COMMON_COLUMNS = [
@@ -117,7 +117,9 @@ def base_frame(source: dict[str, object]) -> pl.LazyFrame:
     return frame.with_columns(clean_text("reason_for_variance").alias("reason_for_variance"))
 
 
-def write_flow(source: dict[str, object], frame: pl.LazyFrame) -> pl.LazyFrame:
+def write_flow(
+    source: dict[str, object], frame: pl.LazyFrame, date_transformed: str
+) -> pl.LazyFrame:
     """Write the map-ready flow table and return the untrimmed flow rows."""
     if source["name"] == "enbridge_mainline":
         flow_rows = frame.filter(
@@ -129,7 +131,11 @@ def write_flow(source: dict[str, object], frame: pl.LazyFrame) -> pl.LazyFrame:
     else:
         flow_rows = frame.filter(pl.col("key_point") != "system")
 
-    flow_rows.select(FLOW_COLUMNS).sink_csv(THROUGHPUT_STAGE_1 / str(source["flow_locations_filename"]))
+    (
+        flow_rows.select(FLOW_COLUMNS)
+        .with_columns(pl.lit(date_transformed).alias("date_transformed"))
+        .sink_csv(THROUGHPUT_STAGE_1 / str(source["flow_locations_filename"]))
+    )
     print(f"Successfully transformed: {source['flow_locations_filename']}")
     return flow_rows
 
@@ -193,25 +199,30 @@ def transmountain_capacity(frame: pl.LazyFrame, flow_rows: pl.LazyFrame) -> pl.L
 
 def transform_pipeline(source: dict[str, object]) -> None:
     """Create both stage-1 outputs for one named CER pipeline source."""
+    date_transformed = current_utc_timestamp()
     frame = base_frame(source)
-    flow_rows = write_flow(source, frame)
+    flow_rows = write_flow(source, frame, date_transformed)
     capacity = (
         transmountain_capacity(frame, flow_rows)
         if source["name"] == "transmountain"
         else capacity_by_key_point(source, frame)
     )
-    capacity.sink_csv(THROUGHPUT_STAGE_1 / str(source["capacity_filename"]))
+    (
+        capacity.select(CAPACITY_COLUMNS)
+        .with_columns(pl.lit(date_transformed).alias("date_transformed"))
+        .sink_csv(THROUGHPUT_STAGE_1 / str(source["capacity_filename"]))
+    )
     print(f"Successfully transformed: {source['capacity_filename']}")
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--pipeline",
         choices=[str(source["name"]) for source in CER_PIPELINE_SOURCES],
         help="Transform only this pipeline; omit to transform all sources.",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     THROUGHPUT_STAGE_1.mkdir(parents=True, exist_ok=True)
     for source in CER_PIPELINE_SOURCES:

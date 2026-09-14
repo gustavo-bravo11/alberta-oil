@@ -11,6 +11,7 @@ The resulting output will be what gets loaded into the database.
 Goal, create two functions here, or script, which can be execute in parallel.
 """
 from pipeline.config.settings import THROUGHPUT_STAGE_1, THROUGHPUT_STAGE_2_FLOW, THROUGHPUT_STAGE_2_CAPACITY
+from pipeline.utils.timestamps import current_utc_timestamp
 import polars as pl
 
 # Used to shorten the pipeline names
@@ -26,6 +27,9 @@ def main() -> None:
     through all the files in the directory which contain
     the types below. Then create a main lazy frame for each.
     """
+    THROUGHPUT_STAGE_2_FLOW.parent.mkdir(parents=True, exist_ok=True)
+    date_transformed = current_utc_timestamp()
+
     table_types = ['flow_location', 'capacity']
     table_frames = []
 
@@ -102,6 +106,7 @@ def main() -> None:
             'throughput_barrels_d', 
         ])
         .sort(['date', 'pipeline_standard'], descending=[True, False])
+        .with_columns(pl.lit(date_transformed).alias('date_transformed'))
     )
 
     flow_frame_standard.sink_csv(path=THROUGHPUT_STAGE_2_FLOW)
@@ -160,6 +165,7 @@ def main() -> None:
             'reason_for_variance', 
         ])
         .sort(['date', 'pipeline_standard'], descending=[True, False])
+        .with_columns(pl.lit(date_transformed).alias('date_transformed'))
     )
 
     capacity_frame_standard.sink_csv(path=THROUGHPUT_STAGE_2_CAPACITY)

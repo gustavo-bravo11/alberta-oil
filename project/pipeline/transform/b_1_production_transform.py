@@ -12,10 +12,12 @@ For simplicity, we will just have a CSV table database.
 """
 from pipeline.config.settings import RAW_BUCKET, TRANSFORMED_BUCKET, CUBIC_M_TO_BARRELS
 from pipeline.config.sources import CER_PRODUCTION
+from pipeline.utils.timestamps import current_utc_timestamp
 
 import polars as pl
 
 def main():
+    TRANSFORMED_BUCKET.mkdir(parents=True, exist_ok=True)
     file_path = RAW_BUCKET / CER_PRODUCTION["raw_filename"]
     df = pl.read_excel(
         file_path, 
@@ -76,12 +78,14 @@ def main():
         .then(pl.lit('support'))
         .otherwise(pl.lit('other'))
         .alias('constraint_category')
+    ).with_columns(
+        pl.lit(current_utc_timestamp()).alias('date_transformed')
     )
 
     unpivoted_df.write_csv(
         file=TRANSFORMED_BUCKET / CER_PRODUCTION["output_filename"]
     )
-    print(f"Successfully transformed: {CER_PRODUCTION["output_filename"]}")
+    print(f"Successfully transformed: {CER_PRODUCTION['output_filename']}")
 
 if __name__ == "__main__":
     main()

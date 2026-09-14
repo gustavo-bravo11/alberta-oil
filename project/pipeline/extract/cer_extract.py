@@ -17,14 +17,19 @@ This file will be used to extract the data from this website. Since the file
 is available via spreadsheets, we have to scrape the website, to find the
 latest available data.
 """
-from pipeline.utils.web_download import safe_request_get, download_file, find_file_url
+from pipeline.utils.web_download import (
+    download_file,
+    find_file_url,
+    record_retrieval,
+    safe_request_get,
+)
 from pipeline.config.sources import CER_PRODUCTION, CER_PIPELINE_SOURCES, CER_RAIL_EXPORTS
-from pipeline.config.settings import RAW_BUCKET
+from pipeline.config.settings import RAW_BUCKET, RAW_RETRIEVAL_LOG
 
 from pathlib import Path
 
 
-def main():
+def main() -> None:
     """
     Open the CER website, look for the xlsx file, then get the 
     file content and write it to disk.
@@ -33,19 +38,27 @@ def main():
     """
     sources = [CER_PRODUCTION] + CER_PIPELINE_SOURCES + [CER_RAIL_EXPORTS]
 
+    failed_sources: list[str] = []
     for source in sources:
         cer_response = safe_request_get(url=source["source_page_url"])
-        if not cer_response: return
+        if not cer_response:
+            failed_sources.append(str(source["name"]))
+            continue
 
         excel_url = find_file_url(
             response=cer_response, 
             url=source["source_page_url"],
             extensions=source["file_extensions"]
         )
-        if not excel_url: return
+        if not excel_url:
+            print(f"No supported download link found for: {source['name']}")
+            failed_sources.append(str(source["name"]))
+            continue
 
         excel_response = safe_request_get(url=excel_url)
-        if not excel_response: return
+        if not excel_response:
+            failed_sources.append(str(source["name"]))
+            continue
 
         if download_file(
             response=excel_response,
@@ -53,7 +66,19 @@ def main():
             output_name=source["raw_filename"],
             output_dir=RAW_BUCKET
         ):
+            record_retrieval(
+                source_name=str(source["name"]),
+                raw_filename=str(source["raw_filename"]),
+                retrieval_log=RAW_RETRIEVAL_LOG,
+            )
             print("Successfully downloaded:", source["raw_filename"], "to disk.")
+        else:
+            failed_sources.append(str(source["name"]))
+
+    if failed_sources:
+        raise RuntimeError(
+            "Extraction failed for: " + ", ".join(failed_sources) + ". Transform tasks were not run."
+        )
 
 if __name__ == "__main__":
     main()

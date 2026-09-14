@@ -1,6 +1,12 @@
 alberta-oil-env/
+.venv/
+certs/
+
 
 *.csv
 *.xlsx
 
 __pycache__/
+
+.env
+requirements.txt

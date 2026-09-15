@@ -7,6 +7,13 @@ Examples:
     python -m pipeline.orchestrator task transform.rail
     python -m pipeline.orchestrator list
 
+Scheduler integration:
+    A scheduler should invoke the required stage with ``--run-type scheduled``;
+    for example, ``python -m pipeline.orchestrator full --run-type scheduled``.
+    Manual invocations default to ``forced``. The orchestrator generates one
+    UUID ``run_id`` per invocation and records it with every retrieved source,
+    so downstream metadata can be tied to the scheduled or forced refresh.
+
 Selecting a stage runs its upstream dependencies by default.  Use --no-deps
 only when the required upstream artifacts already exist and you intentionally
 want to skip them.
@@ -18,8 +25,10 @@ import argparse
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 
+from pipeline.utils.run_context import RUN_TYPES, RunContext
 
-TaskRunner = Callable[[], None]
+
+TaskRunner = Callable[[RunContext], None]
 
 
 @dataclass(frozen=True)
@@ -32,37 +41,43 @@ class Task:
     dependencies: tuple[str, ...] = ()
 
 
-def run_extract_cer() -> None:
+def run_extract_cer(context: RunContext) -> None:
     from pipeline.extract.cer_extract import main
 
-    main()
+    main(run_id=context.run_id, run_type=context.run_type)
 
 
-def run_transform_pipeline_stage_1() -> None:
+def run_transform_pipeline_stage_1(context: RunContext) -> None:
     from pipeline.transform.a_1_pipeline_transform import main
 
     main([])
 
 
-def run_validate_pipeline_inputs() -> None:
+def run_validate_pipeline_inputs(context: RunContext) -> None:
     from pipeline.validate.raw_throughput import validate_pipeline_inputs
 
     validate_pipeline_inputs()
 
 
-def run_transform_pipeline_stage_2() -> None:
+def run_validate_report_dates(context: RunContext) -> None:
+    from pipeline.validate.report_dates import validate_report_dates
+
+    validate_report_dates()
+
+
+def run_transform_pipeline_stage_2(context: RunContext) -> None:
     from pipeline.transform.a_2_throughput_standardization import main
 
     main()
 
 
-def run_transform_production() -> None:
+def run_transform_production(context: RunContext) -> None:
     from pipeline.transform.b_1_production_transform import main
 
     main()
 
 
-def run_transform_rail() -> None:
+def run_transform_rail(context: RunContext) -> None:
     from pipeline.transform.c_1_rail_transform import main
 
     main()
@@ -86,6 +101,12 @@ TASKS: dict[str, Task] = {
         runner=run_validate_pipeline_inputs,
         dependencies=("extract.cer",),
     ),
+    "validate.report_dates": Task(
+        name="validate.report_dates",
+        description="Validate production and rail report dates against their latest data month.",
+        runner=run_validate_report_dates,
+        dependencies=("extract.cer",),
+    ),
     "transform.pipeline_stage_2": Task(
         name="transform.pipeline_stage_2",
         description="Standardize the consolidated pipeline flow and capacity files.",
@@ -96,19 +117,19 @@ TASKS: dict[str, Task] = {
         name="transform.production",
         description="Create the Alberta and Saskatchewan production table.",
         runner=run_transform_production,
-        dependencies=("extract.cer",),
+        dependencies=("validate.report_dates",),
     ),
     "transform.rail": Task(
         name="transform.rail",
         description="Create the monthly rail-export table.",
         runner=run_transform_rail,
-        dependencies=("extract.cer",),
+        dependencies=("validate.report_dates",),
     ),
 }
 
 TARGETS: dict[str, tuple[str, ...]] = {
     "extract": ("extract.cer",),
-    "validate": ("validate.pipeline_inputs",),
+    "validate": ("validate.pipeline_inputs", "validate.report_dates"),
     "transform": (
         "transform.pipeline_stage_2",
         "transform.production",
@@ -164,6 +185,12 @@ def build_parser() -> argparse.ArgumentParser:
             help="Do not run upstream dependencies.",
         )
         command_parser.add_argument(
+            "--run-type",
+            choices=RUN_TYPES,
+            default="forced",
+            help="Classify this invocation for lineage logging (default: forced).",
+        )
+        command_parser.add_argument(
             "--dry-run",
             action="store_true",
             help="Print the resolved execution plan without running it.",
@@ -173,6 +200,7 @@ def build_parser() -> argparse.ArgumentParser:
     task_parser.add_argument("name", choices=sorted(TASKS))
     task_parser.add_argument("--no-deps", action="store_true", help="Do not run upstream dependencies.")
     task_parser.add_argument("--dry-run", action="store_true", help="Print the plan without running it.")
+    task_parser.add_argument("--run-type", choices=RUN_TYPES, default="forced")
     subparsers.add_parser("list", help="List stages and granular tasks.")
     return parser
 
@@ -206,9 +234,11 @@ def main() -> None:
     if args.dry_run:
         return
 
+    context = RunContext.create(args.run_type)
+    print(f"Run: {context.run_id} ({context.run_type})")
     for task in plan:
         print(f"\nRunning: {task.name}")
-        task.runner()
+        task.runner(context)
     print("\nPipeline run completed successfully.")
 
 

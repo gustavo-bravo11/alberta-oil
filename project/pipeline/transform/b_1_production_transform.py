@@ -12,13 +12,17 @@ For simplicity, we will just have a CSV table database.
 """
 from pipeline.config.settings import RAW_BUCKET, TRANSFORMED_BUCKET, CUBIC_M_TO_BARRELS
 from pipeline.config.sources import CER_PRODUCTION
+from pipeline.utils.source_metadata import append_source_metadata
 from pipeline.utils.timestamps import current_utc_timestamp
+from pipeline.utils.workbook_metadata import production_report_metadata
 
 import polars as pl
 
 def main():
     TRANSFORMED_BUCKET.mkdir(parents=True, exist_ok=True)
     file_path = RAW_BUCKET / CER_PRODUCTION["raw_filename"]
+    report_metadata = production_report_metadata(file_path)
+    date_transformed = current_utc_timestamp()
     df = pl.read_excel(
         file_path, 
         sheet_name=CER_PRODUCTION["sheet_name"],
@@ -79,13 +83,19 @@ def main():
         .otherwise(pl.lit('other'))
         .alias('constraint_category')
     ).with_columns(
-        pl.lit(current_utc_timestamp()).alias('date_transformed')
+        pl.lit(date_transformed).alias('date_transformed')
     )
 
     unpivoted_df.write_csv(
         file=TRANSFORMED_BUCKET / CER_PRODUCTION["output_filename"]
     )
     print(f"Successfully transformed: {CER_PRODUCTION['output_filename']}")
+    append_source_metadata(
+        source_name=str(CER_PRODUCTION["name"]),
+        raw_filename=str(CER_PRODUCTION["raw_filename"]),
+        metadata=report_metadata,
+        date_transformed=date_transformed,
+    )
 
 if __name__ == "__main__":
     main()

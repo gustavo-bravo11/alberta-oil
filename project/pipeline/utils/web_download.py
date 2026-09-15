@@ -53,14 +53,37 @@ def download_file(
     return False
 
 
-def record_retrieval(source_name: str, raw_filename: str, retrieval_log: Path) -> None:
+def record_retrieval(
+    source_name: str,
+    raw_filename: str,
+    retrieval_log: Path,
+    run_id: str,
+    run_type: str,
+) -> None:
     """Append the UTC retrieval timestamp for one successfully saved raw file."""
+    if run_type not in {"forced", "scheduled"}:
+        raise ValueError("run_type must be 'forced' or 'scheduled'.")
     retrieval_log.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = ("source_name", "raw_filename", "date_retrieved_utc", "run_id", "run_type")
+    existing_rows: list[dict[str, str]] = []
     write_header = not retrieval_log.exists() or retrieval_log.stat().st_size == 0
+    if retrieval_log.exists() and retrieval_log.stat().st_size > 0:
+        with retrieval_log.open("r", newline="", encoding="utf-8") as log_file:
+            reader = csv.DictReader(log_file)
+            existing_rows = list(reader)
+            existing_fields = reader.fieldnames or []
+        if tuple(existing_fields) != fieldnames:
+            # Historical rows predate run tracking; preserve them with blank new fields.
+            with retrieval_log.open("w", newline="", encoding="utf-8") as log_file:
+                writer = csv.DictWriter(log_file, fieldnames=fieldnames)
+                writer.writeheader()
+                for row in existing_rows:
+                    writer.writerow({field: row.get(field, "") for field in fieldnames})
+            write_header = False
     with retrieval_log.open("a", newline="", encoding="utf-8") as log_file:
         writer = csv.DictWriter(
             log_file,
-            fieldnames=("source_name", "raw_filename", "date_retrieved_utc"),
+            fieldnames=fieldnames,
         )
         if write_header:
             writer.writeheader()
@@ -69,6 +92,8 @@ def record_retrieval(source_name: str, raw_filename: str, retrieval_log: Path) -
                 "source_name": source_name,
                 "raw_filename": raw_filename,
                 "date_retrieved_utc": datetime.now(timezone.utc).isoformat(),
+                "run_id": run_id,
+                "run_type": run_type,
             }
         )
 

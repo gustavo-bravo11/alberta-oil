@@ -29,13 +29,16 @@ from pipeline.config.settings import RAW_BUCKET, RAW_RETRIEVAL_LOG
 from pathlib import Path
 
 
-def main() -> None:
+def main(run_id: str | None = None, run_type: str = "forced") -> None:
     """
     Open the CER website, look for the xlsx file, then get the 
     file content and write it to disk.
 
     Does this for all the files in the sources by appending each list together.
     """
+    from pipeline.utils.run_context import RunContext
+
+    context = RunContext(run_id, run_type) if run_id else RunContext.create(run_type)
     sources = [CER_PRODUCTION] + CER_PIPELINE_SOURCES + [CER_RAIL_EXPORTS]
 
     failed_sources: list[str] = []
@@ -70,6 +73,8 @@ def main() -> None:
                 source_name=str(source["name"]),
                 raw_filename=str(source["raw_filename"]),
                 retrieval_log=RAW_RETRIEVAL_LOG,
+                run_id=context.run_id,
+                run_type=context.run_type,
             )
             print("Successfully downloaded:", source["raw_filename"], "to disk.")
         else:

@@ -1,5 +1,6 @@
 from pipeline.config.settings import RAW_BUCKET, TRANSFORMED_BUCKET, CUBIC_M_TO_BARRELS
 from pipeline.config.sources import CER_RAIL_EXPORTS
+from pipeline.utils.source_metadata import append_source_metadata
 from pipeline.utils.timestamps import current_utc_timestamp
 
 import fastexcel
@@ -83,7 +84,7 @@ def read_rail_sheet(workbook_path: Path, **read_options: object) -> pl.DataFrame
     return pl.DataFrame(worksheet)
 
 
-def source_last_updated(workbook_path: Path) -> str:
+def source_update_metadata(workbook_path: Path) -> dict[str, str]:
     """Read the rail workbook's visible 'Last updated' value."""
     metadata = read_rail_sheet(
         workbook_path,
@@ -105,13 +106,23 @@ def source_last_updated(workbook_path: Path) -> str:
             if not date_value and index + 1 < len(row):
                 date_value = row[index + 1]
             if date_value:
-                return normalize_source_datetime(date_value)
+                return {
+                    "report_date": normalize_source_datetime(date_value),
+                    "report_label": str(value).strip(),
+                    "report_sheet": str(CER_RAIL_EXPORTS["sheet_name"]),
+                }
     raise ValueError(f"No 'Last updated' value found in {workbook_path.name}.")
+
+
+def source_last_updated(workbook_path: Path) -> str:
+    """Compatibility wrapper for the report-date value used in rail facts."""
+    return source_update_metadata(workbook_path)["report_date"]
 
 def main():
     TRANSFORMED_BUCKET.mkdir(parents=True, exist_ok=True)
     raw_file = RAW_BUCKET / CER_RAIL_EXPORTS["raw_filename"]
-    source_updated_at = source_last_updated(raw_file)
+    report_metadata = source_update_metadata(raw_file)
+    source_updated_at = report_metadata["report_date"]
     date_transformed = current_utc_timestamp()
     df = (
         read_rail_sheet(
@@ -156,10 +167,20 @@ def main():
         ])
     )
 
+    latest_rail_month = df.select(pl.col("date").max()).item()
+    if date.fromisoformat(source_updated_at[:10]) < latest_rail_month:
+        raise ValueError("Rail report date is earlier than the latest rail-data month.")
+    report_metadata["latest_data_month"] = latest_rail_month.isoformat()
     df.write_csv(
         file=TRANSFORMED_BUCKET/CER_RAIL_EXPORTS['output_filename']
     )
     print("Successfully transformed:", TRANSFORMED_BUCKET/CER_RAIL_EXPORTS['output_filename'])
+    append_source_metadata(
+        source_name=str(CER_RAIL_EXPORTS["name"]),
+        raw_filename=str(CER_RAIL_EXPORTS["raw_filename"]),
+        metadata=report_metadata,
+        date_transformed=date_transformed,
+    )
 
 
 def clean_column_names(col:str) -> str:

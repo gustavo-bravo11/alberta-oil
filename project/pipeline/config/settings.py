@@ -6,6 +6,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
 RAW_BUCKET = DATA_DIR / "raw"
 RAW_RETRIEVAL_LOG = RAW_BUCKET / "retrieval_log.csv"
+VALIDATED_RAW_BUCKET = DATA_DIR / "validated"
+QUARANTINE_BUCKET = DATA_DIR / "quarantine"
+VALIDATION_REPORTS_BUCKET = DATA_DIR / "validation"
 TRANSFORMED_BUCKET = DATA_DIR / "transformed"
 
 # Ouput stages

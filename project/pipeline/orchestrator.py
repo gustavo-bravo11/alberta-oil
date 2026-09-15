@@ -65,6 +65,12 @@ def run_validate_report_dates(context: RunContext) -> None:
     validate_report_dates()
 
 
+def run_validate_workbook_inputs(context: RunContext) -> None:
+    from pipeline.validate.workbook_inputs import validate_workbook_inputs
+
+    validate_workbook_inputs()
+
+
 def run_transform_pipeline_stage_2(context: RunContext) -> None:
     from pipeline.transform.a_2_throughput_standardization import main
 
@@ -107,6 +113,12 @@ TASKS: dict[str, Task] = {
         runner=run_validate_report_dates,
         dependencies=("extract.cer",),
     ),
+    "validate.workbook_inputs": Task(
+        name="validate.workbook_inputs",
+        description="Validate production and rail workbook rows into accepted CSV inputs.",
+        runner=run_validate_workbook_inputs,
+        dependencies=("extract.cer",),
+    ),
     "transform.pipeline_stage_2": Task(
         name="transform.pipeline_stage_2",
         description="Standardize the consolidated pipeline flow and capacity files.",
@@ -117,19 +129,19 @@ TASKS: dict[str, Task] = {
         name="transform.production",
         description="Create the Alberta and Saskatchewan production table.",
         runner=run_transform_production,
-        dependencies=("validate.report_dates",),
+        dependencies=("validate.workbook_inputs",),
     ),
     "transform.rail": Task(
         name="transform.rail",
         description="Create the monthly rail-export table.",
         runner=run_transform_rail,
-        dependencies=("validate.report_dates",),
+        dependencies=("validate.workbook_inputs",),
     ),
 }
 
 TARGETS: dict[str, tuple[str, ...]] = {
     "extract": ("extract.cer",),
-    "validate": ("validate.pipeline_inputs", "validate.report_dates"),
+    "validate": ("validate.pipeline_inputs", "validate.workbook_inputs"),
     "transform": (
         "transform.pipeline_stage_2",
         "transform.production",

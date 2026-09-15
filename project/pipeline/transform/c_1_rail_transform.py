@@ -1,4 +1,4 @@
-from pipeline.config.settings import RAW_BUCKET, TRANSFORMED_BUCKET, CUBIC_M_TO_BARRELS
+from pipeline.config.settings import RAW_BUCKET, TRANSFORMED_BUCKET, VALIDATED_RAW_BUCKET, CUBIC_M_TO_BARRELS
 from pipeline.config.sources import CER_RAIL_EXPORTS
 from pipeline.utils.source_metadata import append_source_metadata
 from pipeline.utils.timestamps import current_utc_timestamp
@@ -125,12 +125,7 @@ def main():
     source_updated_at = report_metadata["report_date"]
     date_transformed = current_utc_timestamp()
     df = (
-        read_rail_sheet(
-            raw_file,
-            header_row=7,
-            use_columns="B:G",
-        )
-        .rename(clean_column_names)
+        pl.read_csv(VALIDATED_RAW_BUCKET / "cer_rail_validated.csv")
         .filter(
             pl.col('month')
             .cast(pl.String)

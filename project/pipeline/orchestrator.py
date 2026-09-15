@@ -44,6 +44,12 @@ def run_transform_pipeline_stage_1() -> None:
     main([])
 
 
+def run_validate_pipeline_inputs() -> None:
+    from pipeline.validate.raw_throughput import validate_pipeline_inputs
+
+    validate_pipeline_inputs()
+
+
 def run_transform_pipeline_stage_2() -> None:
     from pipeline.transform.a_2_throughput_standardization import main
 
@@ -72,6 +78,12 @@ TASKS: dict[str, Task] = {
         name="transform.pipeline_stage_1",
         description="Create per-pipeline flow and capacity files.",
         runner=run_transform_pipeline_stage_1,
+        dependencies=("validate.pipeline_inputs",),
+    ),
+    "validate.pipeline_inputs": Task(
+        name="validate.pipeline_inputs",
+        description="Validate raw pipeline-throughput inputs and quarantine invalid rows.",
+        runner=run_validate_pipeline_inputs,
         dependencies=("extract.cer",),
     ),
     "transform.pipeline_stage_2": Task(
@@ -96,6 +108,7 @@ TASKS: dict[str, Task] = {
 
 TARGETS: dict[str, tuple[str, ...]] = {
     "extract": ("extract.cer",),
+    "validate": ("validate.pipeline_inputs",),
     "transform": (
         "transform.pipeline_stage_2",
         "transform.production",

@@ -1,4 +1,4 @@
-"""Regression tests for raw pipeline-throughput validation."""
+"""Regression tests for pipeline-throughput validation."""
 
 from __future__ import annotations
 
@@ -8,10 +8,10 @@ import unittest
 from pathlib import Path
 
 from pipeline.validate.contracts import CONTRACTS
-from pipeline.validate.raw_throughput import validate_file
+from pipeline.validate.pipeline_throughput import validate_file
 
 
-class RawThroughputValidationTests(unittest.TestCase):
+class PipelineThroughputValidationTests(unittest.TestCase):
     contract = CONTRACTS["enbridge_mainline"]
 
     def write_source(self, directory: Path, rows: list[dict[str, str]]) -> Path:
@@ -42,7 +42,7 @@ class RawThroughputValidationTests(unittest.TestCase):
         }
 
     def validate(self, rows: list[dict[str, str]]):
-        temporary = tempfile.TemporaryDirectory(dir=Path(__file__).parent)
+        temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         root = Path(temporary.name)
         return validate_file(

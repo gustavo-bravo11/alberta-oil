@@ -32,6 +32,24 @@ class OrchestratorTests(unittest.TestCase):
             ],
         )
 
+    def test_full_stage_validates_all_sources_before_transforming(self) -> None:
+        plan = orchestrator.resolve_tasks(orchestrator.TARGETS["full"])
+        names = [task.name for task in plan]
+        self.assertEqual(
+            names,
+            [
+                "extract.cer",
+                "validate.pipeline_throughput",
+                "validate.report_dates",
+                "validate.production",
+                "validate.rail",
+                "transform.pipeline_stage_1",
+                "transform.pipeline_stage_2",
+                "transform.production",
+                "transform.rail",
+            ],
+        )
+
     def test_cycle_is_rejected(self) -> None:
         task = orchestrator.Task
         tasks = {

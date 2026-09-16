@@ -178,6 +178,10 @@ TARGETS: dict[str, tuple[str, ...]] = {
     ),
     "load": (),
     "full": (
+        "validate.pipeline_throughput",
+        "validate.report_dates",
+        "validate.production",
+        "validate.rail",
         "transform.pipeline_stage_2",
         "transform.production",
         "transform.rail",

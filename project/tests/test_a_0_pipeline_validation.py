@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 from pipeline.validate.contracts import CONTRACTS
-from pipeline.validate.pipeline_throughput import validate_file
+from pipeline.validate.a_0_pipeline_validation import validate_file
 
 
 class PipelineThroughputValidationTests(unittest.TestCase):

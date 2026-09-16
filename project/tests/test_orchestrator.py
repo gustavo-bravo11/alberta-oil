@@ -14,7 +14,7 @@ class OrchestratorTests(unittest.TestCase):
         plan = orchestrator.resolve_tasks(("transform.pipeline_stage_2",))
         self.assertEqual(
             [task.name for task in plan],
-            ["extract.cer", "validate.pipeline_throughput", "transform.pipeline_stage_1", "transform.pipeline_stage_2"],
+            ["extract.cer", "validate.pipeline", "transform.pipeline_stage_1", "transform.pipeline_stage_2"],
         )
 
     def test_validate_stage_includes_report_date_validation_once(self) -> None:
@@ -25,8 +25,7 @@ class OrchestratorTests(unittest.TestCase):
             names,
             [
                 "extract.cer",
-                "validate.pipeline_throughput",
-                "validate.report_dates",
+                "validate.pipeline",
                 "validate.production",
                 "validate.rail",
             ],
@@ -39,8 +38,7 @@ class OrchestratorTests(unittest.TestCase):
             names,
             [
                 "extract.cer",
-                "validate.pipeline_throughput",
-                "validate.report_dates",
+                "validate.pipeline",
                 "validate.production",
                 "validate.rail",
                 "transform.pipeline_stage_1",
@@ -48,6 +46,22 @@ class OrchestratorTests(unittest.TestCase):
                 "transform.production",
                 "transform.rail",
             ],
+        )
+
+    def test_transform_stage_validates_all_sources_before_transforming(self) -> None:
+        plan = orchestrator.resolve_tasks(orchestrator.TARGETS["transform"])
+        names = [task.name for task in plan]
+        self.assertEqual(names[:4], [
+            "extract.cer",
+            "validate.pipeline",
+            "validate.production",
+            "validate.rail",
+        ])
+
+    def test_validation_task_names_match_stage_zero_tasks(self) -> None:
+        self.assertEqual(
+            orchestrator.VALIDATION_TASK_NAMES,
+            {"validate.pipeline", "validate.production", "validate.rail"},
         )
 
     def test_cycle_is_rejected(self) -> None:

@@ -35,7 +35,7 @@ SOURCE_DATE_FORMATS = (
 )
 DATE_PATTERNS = (
     r"\d{4}[-/]\d{1,2}[-/]\d{1,2}",
-    r"[A-Za-z]+\s+\d{1,2},?\s+\d{4}",
+    r"[A-Za-z]+\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}",
     r"\d{1,2}\s+[A-Za-z]+\s+\d{4}",
 )
 
@@ -47,7 +47,7 @@ def normalize_source_datetime(value: object) -> str:
     elif isinstance(value, date):
         parsed = datetime.combine(value, datetime.min.time())
     else:
-        text = str(value).strip()
+        text = re.sub(r"\b(\d{1,2})(?:st|nd|rd|th)\b", r"\1", str(value).strip(), flags=re.IGNORECASE)
         candidates = [text]
         candidates.extend(
             match.group(0)
@@ -85,7 +85,7 @@ def read_rail_sheet(workbook_path: Path, **read_options: object) -> pl.DataFrame
 
 
 def source_update_metadata(workbook_path: Path) -> dict[str, str]:
-    """Read the rail workbook's visible 'Last updated' value."""
+    """Read a recognizable update date from the rail workbook metadata area."""
     metadata = read_rail_sheet(
         workbook_path,
         header_row=None,
@@ -95,20 +95,24 @@ def source_update_metadata(workbook_path: Path) -> dict[str, str]:
         for index, value in enumerate(row):
             if value is None:
                 continue
-            match = re.search(
-                r"(?:numbers\s+)?last\s+updated(?:\s+on)?\s*:?\s*(.*)",
-                str(value),
+            text = str(value).strip()
+            is_update_label = re.search(
+                r"(?:numbers\s+)?last\s+updated|data\s+current\s+as\s+of",
+                text,
                 re.IGNORECASE,
             )
-            if match is None:
+            if not is_update_label:
                 continue
-            date_value: object = match.group(1).strip()
-            if not date_value and index + 1 < len(row):
-                date_value = row[index + 1]
-            if date_value:
+            if any(re.search(pattern, text, re.IGNORECASE) for pattern in DATE_PATTERNS):
                 return {
-                    "report_date": normalize_source_datetime(date_value),
-                    "report_label": str(value).strip(),
+                    "report_date": normalize_source_datetime(text),
+                    "report_label": text,
+                    "report_sheet": str(CER_RAIL_EXPORTS["sheet_name"]),
+                }
+            if index + 1 < len(row) and row[index + 1] is not None:
+                return {
+                    "report_date": normalize_source_datetime(row[index + 1]),
+                    "report_label": text,
                     "report_sheet": str(CER_RAIL_EXPORTS["sheet_name"]),
                 }
     raise ValueError(f"No 'Last updated' value found in {workbook_path.name}.")

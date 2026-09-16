@@ -53,10 +53,10 @@ def run_transform_pipeline_stage_1(context: RunContext) -> None:
     main([])
 
 
-def run_validate_pipeline_inputs(context: RunContext) -> None:
-    from pipeline.validate.raw_throughput import validate_pipeline_inputs
+def run_validate_pipeline_throughput(context: RunContext) -> None:
+    from pipeline.validate.pipeline_throughput import validate_pipeline_throughput
 
-    validate_pipeline_inputs()
+    validate_pipeline_throughput()
 
 
 def run_validate_report_dates(context: RunContext) -> None:
@@ -65,10 +65,28 @@ def run_validate_report_dates(context: RunContext) -> None:
     validate_report_dates()
 
 
-def run_validate_workbook_inputs(context: RunContext) -> None:
-    from pipeline.validate.workbook_inputs import validate_workbook_inputs
+def run_validate_production(context: RunContext) -> None:
+    from pipeline.validate.production import validate_production
 
-    validate_workbook_inputs()
+    result = validate_production()
+    print(
+        f"{result.source_name}: received={result.total_rows}, passed={result.passed_rows}, "
+        f"rejected={result.rejected_rows}, fatal={result.fatal}"
+    )
+    if result.fatal:
+        raise RuntimeError("Production input validation failed.")
+
+
+def run_validate_rail(context: RunContext) -> None:
+    from pipeline.validate.rail import validate_rail
+
+    result = validate_rail()
+    print(
+        f"{result.source_name}: received={result.total_rows}, passed={result.passed_rows}, "
+        f"rejected={result.rejected_rows}, fatal={result.fatal}"
+    )
+    if result.fatal:
+        raise RuntimeError("Rail input validation failed.")
 
 
 def run_transform_pipeline_stage_2(context: RunContext) -> None:
@@ -99,12 +117,12 @@ TASKS: dict[str, Task] = {
         name="transform.pipeline_stage_1",
         description="Create per-pipeline flow and capacity files.",
         runner=run_transform_pipeline_stage_1,
-        dependencies=("validate.pipeline_inputs",),
+        dependencies=("validate.pipeline_throughput",),
     ),
-    "validate.pipeline_inputs": Task(
-        name="validate.pipeline_inputs",
+    "validate.pipeline_throughput": Task(
+        name="validate.pipeline_throughput",
         description="Validate raw pipeline-throughput inputs and quarantine invalid rows.",
-        runner=run_validate_pipeline_inputs,
+        runner=run_validate_pipeline_throughput,
         dependencies=("extract.cer",),
     ),
     "validate.report_dates": Task(
@@ -113,10 +131,16 @@ TASKS: dict[str, Task] = {
         runner=run_validate_report_dates,
         dependencies=("extract.cer",),
     ),
-    "validate.workbook_inputs": Task(
-        name="validate.workbook_inputs",
-        description="Validate production and rail workbook rows into accepted CSV inputs.",
-        runner=run_validate_workbook_inputs,
+    "validate.production": Task(
+        name="validate.production",
+        description="Validate production workbook rows into an accepted CSV input.",
+        runner=run_validate_production,
+        dependencies=("extract.cer",),
+    ),
+    "validate.rail": Task(
+        name="validate.rail",
+        description="Validate rail workbook rows into an accepted CSV input.",
+        runner=run_validate_rail,
         dependencies=("extract.cer",),
     ),
     "transform.pipeline_stage_2": Task(
@@ -129,19 +153,24 @@ TASKS: dict[str, Task] = {
         name="transform.production",
         description="Create the Alberta and Saskatchewan production table.",
         runner=run_transform_production,
-        dependencies=("validate.workbook_inputs",),
+        dependencies=("validate.production",),
     ),
     "transform.rail": Task(
         name="transform.rail",
         description="Create the monthly rail-export table.",
         runner=run_transform_rail,
-        dependencies=("validate.workbook_inputs",),
+        dependencies=("validate.rail",),
     ),
 }
 
 TARGETS: dict[str, tuple[str, ...]] = {
     "extract": ("extract.cer",),
-    "validate": ("validate.pipeline_inputs", "validate.workbook_inputs"),
+    "validate": (
+        "validate.pipeline_throughput",
+        "validate.report_dates",
+        "validate.production",
+        "validate.rail",
+    ),
     "transform": (
         "transform.pipeline_stage_2",
         "transform.production",

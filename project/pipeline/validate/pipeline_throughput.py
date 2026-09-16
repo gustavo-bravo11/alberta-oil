@@ -1,6 +1,6 @@
 """Validate CER pipeline-throughput CSVs and materialize accepted rows.
 
-Run all configured sources with ``python -m pipeline.validate.raw_throughput``.
+Run all configured sources with ``python -m pipeline.validate.pipeline_throughput``.
 The validator preserves downloaded raw files, writes accepted rows to
 ``data/validated``, sends rejected rows to ``data/quarantine``, and records a
 JSON report plus row-count history under ``data/validation``.
@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import argparse
 import csv
-import json
 import math
 import re
 from collections import Counter, defaultdict
@@ -30,13 +29,10 @@ from pipeline.validate.contracts import (
     ALLOWED_PRODUCTS,
     ALLOWED_TRADE_TYPES,
     CONTRACTS,
-    CONTRACT_VERSION,
     ThroughputContract,
 )
+from pipeline.validate.common import prior_row_count, write_report
 from pipeline.validate.models import Severity, ValidationIssue, ValidationResult
-
-
-VALIDATOR_VERSION = "1.0.0"
 
 
 def normalized_text(value: str | None) -> str:
@@ -175,43 +171,6 @@ def write_rows(path: Path, headers: list[str], rows: Iterable[dict[str, str]]) -
         writer.writerows(rows)
 
 
-def prior_row_count(history_path: Path, source_name: str) -> int | None:
-    if not history_path.exists():
-        return None
-    latest: int | None = None
-    for line in history_path.read_text(encoding="utf-8").splitlines():
-        try:
-            entry = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if entry.get("source_name") == source_name:
-            latest = int(entry["total_rows"])
-    return latest
-
-
-def write_report(result: ValidationResult, reports_dir: Path, timestamp: str) -> None:
-    reports_dir.mkdir(parents=True, exist_ok=True)
-    report_path = reports_dir / f"{result.source_name}-{timestamp}.json"
-    result.report_path = str(report_path)
-    report = result.as_dict()
-    report["contract_version"] = CONTRACT_VERSION
-    report["validator_version"] = VALIDATOR_VERSION
-    report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
-    history_path = reports_dir / "row_count_history.jsonl"
-    with history_path.open("a", encoding="utf-8") as file:
-        file.write(
-            json.dumps(
-                {
-                    "source_name": result.source_name,
-                    "raw_filename": result.raw_filename,
-                    "retrieved_at": result.retrieved_at.isoformat(),
-                    "total_rows": result.total_rows,
-                }
-            )
-            + "\n"
-        )
-
-
 def validate_file(
     contract: ThroughputContract,
     raw_path: Path,
@@ -300,7 +259,7 @@ def validate_file(
     return result
 
 
-def validate_pipeline_inputs(
+def validate_pipeline_throughput(
     raw_dir: Path = RAW_BUCKET,
     validated_dir: Path = VALIDATED_RAW_BUCKET,
     quarantine_dir: Path = QUARANTINE_BUCKET,
@@ -336,7 +295,7 @@ def main() -> None:
     parser.add_argument("--quarantine-dir", type=Path, default=QUARANTINE_BUCKET)
     parser.add_argument("--reports-dir", type=Path, default=VALIDATION_REPORTS_BUCKET)
     args = parser.parse_args()
-    validate_pipeline_inputs(args.raw_dir, args.validated_dir, args.quarantine_dir, args.reports_dir)
+    validate_pipeline_throughput(args.raw_dir, args.validated_dir, args.quarantine_dir, args.reports_dir)
 
 
 if __name__ == "__main__":

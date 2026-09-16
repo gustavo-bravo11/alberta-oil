@@ -14,12 +14,20 @@ REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 PACKAGE_REL = "http://schemas.openxmlformats.org/package/2006/relationships"
 NAMESPACES = {"m": MAIN, "pr": PACKAGE_REL}
 DATE_FORMATS = ("%Y-%m-%d", "%Y/%m/%d", "%B %d, %Y", "%b %d, %Y", "%d %B %Y", "%d %b %Y")
-DATE_PATTERNS = (r"\d{4}[-/]\d{1,2}[-/]\d{1,2}", r"[A-Za-z]+\s+\d{1,2},?\s+\d{4}")
+DATE_PATTERNS = (
+    r"\d{4}[-/]\d{1,2}[-/]\d{1,2}",
+    r"[A-Za-z]+\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}",
+)
+
+
+def strip_ordinal_suffixes(value: str) -> str:
+    """Convert date ordinals such as ``10th`` to values accepted by strptime."""
+    return re.sub(r"\b(\d{1,2})(?:st|nd|rd|th)\b", r"\1", value, flags=re.IGNORECASE)
 
 
 def parse_report_date(value: str) -> str:
     """Parse a visible workbook date into an ISO-8601 UTC timestamp."""
-    text = value.strip()
+    text = strip_ordinal_suffixes(value.strip())
     try:
         parsed = datetime(1899, 12, 30) + timedelta(days=float(text))
     except ValueError:
@@ -105,18 +113,24 @@ def excel_date(value: str) -> date:
         return datetime.strptime(value, "%b-%y").date()
 
 
-def production_report_metadata(workbook_path: Path, today: date | None = None) -> dict[str, str]:
-    """Select the current-year table, falling back once, and parse its A2 date."""
-    reference_date = today or date.today()
-    candidate_sheets = (
+def select_production_report_sheet(sheet_names: set[str], reference_date: date) -> str:
+    """Select only the current or immediately prior annual production sheet."""
+    candidates = (
         f"{reference_date.year % 100:02d}TABLE - cubic meters per day",
         f"{(reference_date.year - 1) % 100:02d}TABLE - cubic meters per day",
     )
+    selected = next((sheet for sheet in candidates if sheet in sheet_names), None)
+    if selected is None:
+        raise ValueError("Neither the current nor prior annual production worksheet is available.")
+    return selected
+
+
+def production_report_metadata(workbook_path: Path, today: date | None = None) -> dict[str, str]:
+    """Select the current-year table, falling back once, and parse its A2 date."""
+    reference_date = today or date.today()
     workbook = ProductionWorkbook(workbook_path)
     try:
-        selected = next((sheet for sheet in candidate_sheets if sheet in workbook.sheet_names()), None)
-        if selected is None:
-            raise ValueError("Neither the current nor prior annual production worksheet is available.")
+        selected = select_production_report_sheet(workbook.sheet_names(), reference_date)
         report_label = workbook.cell_value(workbook.sheet(selected), "A2")
         if not report_label:
             raise ValueError(f"Report date is missing from {selected}!A2.")

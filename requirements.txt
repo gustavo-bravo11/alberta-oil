@@ -1,0 +1,5 @@
+beautifulsoup4
+fastexcel
+polars
+requests
+xlsx2csv

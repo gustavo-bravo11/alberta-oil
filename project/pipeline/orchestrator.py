@@ -23,12 +23,26 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Callable, Iterable
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 
 from pipeline.utils.run_context import RUN_TYPES, RunContext
 
 
 TaskRunner = Callable[[RunContext], None]
+VALIDATION_TASK_NAMES = frozenset(
+    {
+        "validate.pipeline",
+        "validate.production",
+        "validate.rail",
+    }
+)
+PIPELINE_TRANSFORM_TASK_NAMES = frozenset(
+    {
+        "transform.pipeline_stage_1",
+        "transform.pipeline_stage_2",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -47,46 +61,38 @@ def run_extract_cer(context: RunContext) -> None:
     main(run_id=context.run_id, run_type=context.run_type)
 
 
-def run_transform_pipeline_stage_1(context: RunContext) -> None:
-    from pipeline.transform.a_1_pipeline_transform import main
+def run_validate_pipeline(context: RunContext) -> None:
+    from pipeline.validate.a_0_pipeline_validation import validate_pipeline_throughput
+    from pipeline.validate.common import print_validation_result
 
-    main([])
-
-
-def run_validate_pipeline_throughput(context: RunContext) -> None:
-    from pipeline.validate.pipeline_throughput import validate_pipeline_throughput
-
-    validate_pipeline_throughput()
-
-
-def run_validate_report_dates(context: RunContext) -> None:
-    from pipeline.validate.report_dates import validate_report_dates
-
-    validate_report_dates()
+    for result in validate_pipeline_throughput():
+        print_validation_result(result)
 
 
 def run_validate_production(context: RunContext) -> None:
-    from pipeline.validate.production import validate_production
+    from pipeline.validate.b_0_production_validation import validate_production
+    from pipeline.validate.common import print_validation_result
 
     result = validate_production()
-    print(
-        f"{result.source_name}: received={result.total_rows}, passed={result.passed_rows}, "
-        f"rejected={result.rejected_rows}, fatal={result.fatal}"
-    )
+    print_validation_result(result)
     if result.fatal:
         raise RuntimeError("Production input validation failed.")
 
 
 def run_validate_rail(context: RunContext) -> None:
-    from pipeline.validate.rail import validate_rail
+    from pipeline.validate.c_0_rail_validation import validate_rail
+    from pipeline.validate.common import print_validation_result
 
     result = validate_rail()
-    print(
-        f"{result.source_name}: received={result.total_rows}, passed={result.passed_rows}, "
-        f"rejected={result.rejected_rows}, fatal={result.fatal}"
-    )
+    print_validation_result(result)
     if result.fatal:
         raise RuntimeError("Rail input validation failed.")
+
+
+def run_transform_pipeline_stage_1(context: RunContext) -> None:
+    from pipeline.transform.a_1_pipeline_transform import main
+
+    main([])
 
 
 def run_transform_pipeline_stage_2(context: RunContext) -> None:
@@ -107,41 +113,38 @@ def run_transform_rail(context: RunContext) -> None:
     main()
 
 
+# Keep orchestrator task names source-based (for example, ``validate.pipeline``)
+# to match transform task names. Stage letter/number prefixes belong only in
+# validator filenames, where they document source grouping and file order.
 TASKS: dict[str, Task] = {
     "extract.cer": Task(
         name="extract.cer",
         description="Download all configured CER source files.",
         runner=run_extract_cer,
     ),
-    "transform.pipeline_stage_1": Task(
-        name="transform.pipeline_stage_1",
-        description="Create per-pipeline flow and capacity files.",
-        runner=run_transform_pipeline_stage_1,
-        dependencies=("validate.pipeline_throughput",),
-    ),
-    "validate.pipeline_throughput": Task(
-        name="validate.pipeline_throughput",
-        description="Validate raw pipeline-throughput inputs and quarantine invalid rows.",
-        runner=run_validate_pipeline_throughput,
-        dependencies=("extract.cer",),
-    ),
-    "validate.report_dates": Task(
-        name="validate.report_dates",
-        description="Validate production and rail report dates against their latest data month.",
-        runner=run_validate_report_dates,
+    "validate.pipeline": Task(
+        name="validate.pipeline",
+        description="Validate pipeline-throughput inputs and quarantine invalid rows.",
+        runner=run_validate_pipeline,
         dependencies=("extract.cer",),
     ),
     "validate.production": Task(
         name="validate.production",
-        description="Validate production workbook rows into an accepted CSV input.",
+        description="Validate production rows and report-date metadata.",
         runner=run_validate_production,
         dependencies=("extract.cer",),
     ),
     "validate.rail": Task(
         name="validate.rail",
-        description="Validate rail workbook rows into an accepted CSV input.",
+        description="Validate rail rows and report-date metadata.",
         runner=run_validate_rail,
         dependencies=("extract.cer",),
+    ),
+    "transform.pipeline_stage_1": Task(
+        name="transform.pipeline_stage_1",
+        description="Create per-pipeline flow and capacity files.",
+        runner=run_transform_pipeline_stage_1,
+        dependencies=("validate.pipeline",),
     ),
     "transform.pipeline_stage_2": Task(
         name="transform.pipeline_stage_2",
@@ -163,23 +166,27 @@ TASKS: dict[str, Task] = {
     ),
 }
 
+# Stage-0 validators are explicitly listed in transform/full targets even though
+# downstream transform dependencies also reach them. This documents the
+# all-source preflight barrier and keeps it visible in dry-run plans.
 TARGETS: dict[str, tuple[str, ...]] = {
     "extract": ("extract.cer",),
     "validate": (
-        "validate.pipeline_throughput",
-        "validate.report_dates",
+        "validate.pipeline",
         "validate.production",
         "validate.rail",
     ),
     "transform": (
+        "validate.pipeline",
+        "validate.production",
+        "validate.rail",
         "transform.pipeline_stage_2",
         "transform.production",
         "transform.rail",
     ),
     "load": (),
     "full": (
-        "validate.pipeline_throughput",
-        "validate.report_dates",
+        "validate.pipeline",
         "validate.production",
         "validate.rail",
         "transform.pipeline_stage_2",
@@ -261,6 +268,55 @@ def list_tasks() -> None:
         print(f"  {task.name}\n    {task.description}\n    depends on: {dependencies}")
 
 
+def run_task(task: Task, context: RunContext) -> None:
+    """Run one task with consistent task-level status messages."""
+    print(f"\nStarting: {task.name}")
+    task.runner(context)
+    print(f"Completed: {task.name}")
+
+
+def run_task_sequence(tasks: list[Task], context: RunContext) -> None:
+    """Run a dependency-ordered task branch sequentially."""
+    for task in tasks:
+        run_task(task, context)
+
+
+def run_plan(plan: list[Task], context: RunContext) -> None:
+    """Run preflight validation, then independent transform branches in parallel."""
+    first_validation_index = next(
+        (index for index, task in enumerate(plan) if task.name in VALIDATION_TASK_NAMES),
+        len(plan),
+    )
+    prerequisite_tasks = plan[:first_validation_index]
+    validation_tasks = [task for task in plan if task.name in VALIDATION_TASK_NAMES]
+    downstream_tasks = [
+        task for task in plan[first_validation_index:] if task.name not in VALIDATION_TASK_NAMES
+    ]
+    for task in prerequisite_tasks:
+        run_task(task, context)
+    if validation_tasks:
+        print("\nRunning validation preflight in parallel:")
+        with ThreadPoolExecutor(max_workers=len(validation_tasks)) as executor:
+            futures = {task.name: executor.submit(run_task, task, context) for task in validation_tasks}
+            for task in validation_tasks:
+                futures[task.name].result()
+    pipeline_tasks = [task for task in downstream_tasks if task.name in PIPELINE_TRANSFORM_TASK_NAMES]
+    independent_tasks = [task for task in downstream_tasks if task.name not in PIPELINE_TRANSFORM_TASK_NAMES]
+    branch_count = len(independent_tasks) + bool(pipeline_tasks)
+    if branch_count <= 1:
+        run_task_sequence(pipeline_tasks or independent_tasks, context)
+        return
+
+    print("\nRunning transform branches in parallel:")
+    with ThreadPoolExecutor(max_workers=branch_count) as executor:
+        futures = []
+        if pipeline_tasks:
+            futures.append(executor.submit(run_task_sequence, pipeline_tasks, context))
+        futures.extend(executor.submit(run_task, task, context) for task in independent_tasks)
+        for future in futures:
+            future.result()
+
+
 def main() -> None:
     args = build_parser().parse_args()
     if args.command == "list":
@@ -281,9 +337,7 @@ def main() -> None:
 
     context = RunContext.create(args.run_type)
     print(f"Run: {context.run_id} ({context.run_type})")
-    for task in plan:
-        print(f"\nRunning: {task.name}")
-        task.runner(context)
+    run_plan(plan, context)
     print("\nPipeline run completed successfully.")
 
 

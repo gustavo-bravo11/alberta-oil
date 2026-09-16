@@ -126,7 +126,7 @@ def main() -> None:
     )
 
     flow_frame_standard.sink_csv(path=THROUGHPUT_STAGE_2_FLOW)
-    print("Successfully transfomed:", THROUGHPUT_STAGE_2_FLOW)
+    print("Successfully transformed:", THROUGHPUT_STAGE_2_FLOW)
 
     """
     Now for the capacity data.

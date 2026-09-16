@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+from threading import Lock
 
 import polars as pl
 
@@ -14,6 +15,15 @@ from pipeline.validate.models import Severity, ValidationIssue, ValidationResult
 
 
 VALIDATOR_VERSION = "1.0.0"
+REPORT_HISTORY_LOCK = Lock()
+
+
+def print_validation_result(result: ValidationResult) -> None:
+    """Print the standard one-line status summary for any source validator."""
+    print(
+        f"{result.source_name}: received={result.total_rows}, passed={result.passed_rows}, "
+        f"rejected={result.rejected_rows}, fatal={result.fatal}"
+    )
 
 
 def prior_row_count(history_path: Path, source_name: str) -> int | None:
@@ -41,18 +51,19 @@ def write_report(result: ValidationResult, reports_dir: Path, timestamp: str) ->
     report["validator_version"] = VALIDATOR_VERSION
     report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     history_path = reports_dir / "row_count_history.jsonl"
-    with history_path.open("a", encoding="utf-8") as file:
-        file.write(
-            json.dumps(
-                {
-                    "source_name": result.source_name,
-                    "raw_filename": result.raw_filename,
-                    "retrieved_at": result.retrieved_at.isoformat(),
-                    "total_rows": result.total_rows,
-                }
+    with REPORT_HISTORY_LOCK:
+        with history_path.open("a", encoding="utf-8") as file:
+            file.write(
+                json.dumps(
+                    {
+                        "source_name": result.source_name,
+                        "raw_filename": result.raw_filename,
+                        "retrieved_at": result.retrieved_at.isoformat(),
+                        "total_rows": result.total_rows,
+                    }
+                )
+                + "\n"
             )
-            + "\n"
-        )
 
 
 def finalize_frame(

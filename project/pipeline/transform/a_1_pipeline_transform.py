@@ -39,8 +39,6 @@ RAW_VOLUME_COLUMNS = [
     "uncommitted_volumes_1000_m3_d",
 ]
 
-COMMITTED_VOLUME_RECONCILIATION_TOLERANCE_M3_D = 1_000
-
 FLOW_COLUMNS = [
     "date",
     "pipeline",
@@ -284,38 +282,6 @@ def transmountain_capacity(frame: pl.LazyFrame, flow_rows: pl.LazyFrame) -> pl.L
     )
 
 
-def reconciliation_exceptions(capacity: pl.LazyFrame) -> pl.DataFrame:
-    """Return capacity rows where reported component volumes miss total throughput."""
-    return (
-        capacity.filter(
-            pl.col("committed_volume_m3_d").is_not_null()
-            & pl.col("uncommitted_volume_m3_d").is_not_null()
-        )
-        .with_columns(
-            (
-                (pl.col("committed_volume_m3_d") + pl.col("uncommitted_volume_m3_d"))
-                - pl.col("total_throughput_m3_d")
-            )
-            .abs()
-            .alias("reconciliation_difference_m3_d")
-        )
-        .filter(
-            pl.col("reconciliation_difference_m3_d")
-            > COMMITTED_VOLUME_RECONCILIATION_TOLERANCE_M3_D
-        )
-        .select(
-            "date",
-            "pipeline",
-            "capacity_basis",
-            "total_throughput_m3_d",
-            "committed_volume_m3_d",
-            "uncommitted_volume_m3_d",
-            "reconciliation_difference_m3_d",
-        )
-        .collect()
-    )
-
-
 def transform_pipeline(source: dict[str, object]) -> None:
     """Create both stage-1 outputs for one named CER pipeline source."""
     date_transformed = current_utc_timestamp()
@@ -326,15 +292,6 @@ def transform_pipeline(source: dict[str, object]) -> None:
         if source["name"] == "transmountain"
         else capacity_by_key_point(source, frame)
     )
-    exceptions = reconciliation_exceptions(capacity)
-    if exceptions.height:
-        first_date = exceptions.get_column("date").min()
-        last_date = exceptions.get_column("date").max()
-        print(
-            f"Committed/uncommitted reconciliation exceptions for {source['name']}: "
-            f"{exceptions.height} rows from {first_date} through {last_date} "
-            f"(tolerance {COMMITTED_VOLUME_RECONCILIATION_TOLERANCE_M3_D:,} m3/d)."
-        )
     (
         capacity.select(CAPACITY_COLUMNS)
         .with_columns(pl.lit(date_transformed).alias("date_transformed"))

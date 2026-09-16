@@ -1,6 +1,6 @@
 """Validate CER pipeline-throughput CSVs and materialize accepted rows.
 
-Run all configured sources with ``python -m pipeline.validate.pipeline_throughput``.
+Run all configured sources with ``python -m pipeline.validate.a_0_pipeline_validation``.
 The validator preserves downloaded raw files, writes accepted rows to
 ``data/validated``, sends rejected rows to ``data/quarantine``, and records a
 JSON report plus row-count history under ``data/validation``.
@@ -31,7 +31,7 @@ from pipeline.validate.contracts import (
     CONTRACTS,
     ThroughputContract,
 )
-from pipeline.validate.common import prior_row_count, write_report
+from pipeline.validate.common import prior_row_count, print_validation_result, write_report
 from pipeline.validate.models import Severity, ValidationIssue, ValidationResult
 
 
@@ -278,10 +278,6 @@ def validate_pipeline_throughput(
             reports_dir,
         )
         results.append(result)
-        print(
-            f"{source_name}: received={result.total_rows}, passed={result.passed_rows}, "
-            f"rejected={result.rejected_rows}, fatal={result.fatal}"
-        )
     fatal_sources = [result.source_name for result in results if result.fatal]
     if fatal_sources:
         raise RuntimeError("Pipeline input validation failed for: " + ", ".join(fatal_sources))
@@ -295,7 +291,10 @@ def main() -> None:
     parser.add_argument("--quarantine-dir", type=Path, default=QUARANTINE_BUCKET)
     parser.add_argument("--reports-dir", type=Path, default=VALIDATION_REPORTS_BUCKET)
     args = parser.parse_args()
-    validate_pipeline_throughput(args.raw_dir, args.validated_dir, args.quarantine_dir, args.reports_dir)
+    for result in validate_pipeline_throughput(
+        args.raw_dir, args.validated_dir, args.quarantine_dir, args.reports_dir
+    ):
+        print_validation_result(result)
 
 
 if __name__ == "__main__":

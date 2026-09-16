@@ -197,7 +197,7 @@ def main():
     df.write_csv(
         file=TRANSFORMED_BUCKET/CER_RAIL_EXPORTS['output_filename']
     )
-    print("Successfully transformed:", TRANSFORMED_BUCKET/CER_RAIL_EXPORTS['output_filename'])
+    print("Successfully transformed:", CER_RAIL_EXPORTS['output_filename'])
     append_source_metadata(
         source_name=str(CER_RAIL_EXPORTS["name"]),
         raw_filename=str(CER_RAIL_EXPORTS["raw_filename"]),

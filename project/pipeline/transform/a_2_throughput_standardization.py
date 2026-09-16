@@ -21,6 +21,18 @@ PIPELINE_MAP = {
     "trans mountain pipeline": "trans_mountain",
 }
 
+CAPACITY_NUMERIC_COLUMNS = {
+    'total_throughput_m3_d': pl.Float64,
+    'total_throughput_barrels_d': pl.Float64,
+    'committed_volume_m3_d': pl.Float64,
+    'committed_volume_barrels_d': pl.Float64,
+    'uncommitted_volume_m3_d': pl.Float64,
+    'uncommitted_volume_barrels_d': pl.Float64,
+    'available_capacity_m3_d': pl.Float64,
+    'available_capacity_barrels_d': pl.Float64,
+    'reported_available_capacity_utilization': pl.Float64,
+}
+
 def main() -> None:
     """
     Concatenate all frames into two lazy frames by looping
@@ -37,7 +49,11 @@ def main() -> None:
         frames = []
         for path in THROUGHPUT_STAGE_1.glob(f"*{table_type}.csv"):
             frames.append(
-                pl.scan_csv(path, try_parse_dates=True)
+                pl.scan_csv(
+                    path,
+                    try_parse_dates=True,
+                    schema_overrides=CAPACITY_NUMERIC_COLUMNS if table_type == 'capacity' else None,
+                )
             )
         table_frames.append(pl.concat(frames, how='diagonal'))
 
@@ -157,11 +173,16 @@ def main() -> None:
             'pipeline_standard',
             'capacity_basis_original', 
             'capacity_basis_standard',
+            'capacity_scope',
             'total_throughput_m3_d', 
             'total_throughput_barrels_d', 
+            'committed_volume_m3_d',
+            'committed_volume_barrels_d',
+            'uncommitted_volume_m3_d',
+            'uncommitted_volume_barrels_d',
             'available_capacity_m3_d', 
             'available_capacity_barrels_d', 
-            'reported_available_capacity_utlization', 
+            'reported_available_capacity_utilization',
             'reason_for_variance', 
         ])
         .sort(['date', 'pipeline_standard'], descending=[True, False])

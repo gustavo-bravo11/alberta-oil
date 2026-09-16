@@ -83,3 +83,15 @@ class ReportDateTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "earlier than the latest rail-data month"):
                 validate_report_dates()
 
+    def test_report_date_validator_assumes_latest_month_end_when_label_is_missing(self) -> None:
+        rail_rows = pl.DataFrame({"year": [2025], "month": ["July"]})
+        with (
+            patch(
+                "pipeline.validate.report_dates.production_report_metadata",
+                return_value={"report_date": "2025-08-01T00:00:00+00:00", "latest_data_month": "2025-07-01"},
+            ),
+            patch("pipeline.validate.report_dates.read_rail_sheet", return_value=rail_rows),
+            patch("pipeline.validate.report_dates.source_update_metadata", side_effect=ValueError("No update date")),
+            self.assertWarnsRegex(RuntimeWarning, "assuming 2025-07-31"),
+        ):
+            validate_report_dates()

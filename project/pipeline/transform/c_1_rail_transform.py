@@ -7,6 +7,8 @@ import fastexcel
 import polars as pl
 import re
 import unicodedata
+import warnings
+from calendar import monthrange
 from datetime import date, datetime, timezone
 from pathlib import Path
 
@@ -118,6 +120,25 @@ def source_update_metadata(workbook_path: Path) -> dict[str, str]:
     raise ValueError(f"No 'Last updated' value found in {workbook_path.name}.")
 
 
+def assumed_source_update_metadata(latest_data_month: date, reason: str) -> dict[str, str]:
+    """Return a clearly labelled fallback when CER's update date is unavailable."""
+    assumed_date = date(
+        latest_data_month.year,
+        latest_data_month.month,
+        monthrange(latest_data_month.year, latest_data_month.month)[1],
+    )
+    message = (
+        "Rail source update date could not be parsed; assuming "
+        f"{assumed_date.isoformat()}, the final calendar day of the latest data month. {reason}"
+    )
+    warnings.warn(message, RuntimeWarning, stacklevel=2)
+    return {
+        "report_date": normalize_source_datetime(assumed_date),
+        "report_label": f"ASSUMED: {message}",
+        "report_sheet": str(CER_RAIL_EXPORTS["sheet_name"]),
+    }
+
+
 def source_last_updated(workbook_path: Path) -> str:
     """Compatibility wrapper for the report-date value used in rail facts."""
     return source_update_metadata(workbook_path)["report_date"]
@@ -125,8 +146,6 @@ def source_last_updated(workbook_path: Path) -> str:
 def main():
     TRANSFORMED_BUCKET.mkdir(parents=True, exist_ok=True)
     raw_file = RAW_BUCKET / CER_RAIL_EXPORTS["raw_filename"]
-    report_metadata = source_update_metadata(raw_file)
-    source_updated_at = report_metadata["report_date"]
     date_transformed = current_utc_timestamp()
     df = (
         pl.read_csv(VALIDATED_RAW_BUCKET / "cer_rail_validated.csv")
@@ -153,22 +172,27 @@ def main():
             )
             .alias('date')
         )
-        .with_columns(
-            pl.lit(source_updated_at).alias('source_last_updated'),
-            pl.lit(date_transformed).alias('date_transformed'),
-        )
         .select([
             'date',
             'volume_m3_per_day',
             'volume_barrels_per_day',
-            'source_last_updated',
-            'date_transformed',
         ])
     )
 
     latest_rail_month = df.select(pl.col("date").max()).item()
+    if latest_rail_month is None:
+        raise ValueError("Rail validated input has no valid monthly rows.")
+    try:
+        report_metadata = source_update_metadata(raw_file)
+    except ValueError as error:
+        report_metadata = assumed_source_update_metadata(latest_rail_month, str(error))
+    source_updated_at = report_metadata["report_date"]
     if date.fromisoformat(source_updated_at[:10]) < latest_rail_month:
         raise ValueError("Rail report date is earlier than the latest rail-data month.")
+    df = df.with_columns(
+        pl.lit(source_updated_at).alias('source_last_updated'),
+        pl.lit(date_transformed).alias('date_transformed'),
+    )
     report_metadata["latest_data_month"] = latest_rail_month.isoformat()
     df.write_csv(
         file=TRANSFORMED_BUCKET/CER_RAIL_EXPORTS['output_filename']

@@ -8,12 +8,18 @@ import polars as pl
 
 from pipeline.config.settings import RAW_BUCKET
 from pipeline.config.sources import CER_PRODUCTION, CER_RAIL_EXPORTS
-from pipeline.transform.c_1_rail_transform import MONTH_NUM, clean_column_names, read_rail_sheet, source_update_metadata
+from pipeline.transform.c_1_rail_transform import (
+    MONTH_NUM,
+    assumed_source_update_metadata,
+    clean_column_names,
+    read_rail_sheet,
+    source_update_metadata,
+)
 from pipeline.utils.workbook_metadata import production_report_metadata
 
 
 def validate_report_dates() -> None:
-    """Reject workbooks whose report date predates their latest data month."""
+    """Validate workbook report dates against their latest data month."""
     production = production_report_metadata(RAW_BUCKET / str(CER_PRODUCTION["raw_filename"]))
 
     rail_file = RAW_BUCKET / str(CER_RAIL_EXPORTS["raw_filename"])
@@ -35,7 +41,10 @@ def validate_report_dates() -> None:
     latest_rail_month = rail.select(pl.col("date").max()).item()
     if latest_rail_month is None:
         raise ValueError("Rail workbook has no valid monthly rows.")
-    rail_metadata = source_update_metadata(rail_file)
+    try:
+        rail_metadata = source_update_metadata(rail_file)
+    except ValueError as error:
+        rail_metadata = assumed_source_update_metadata(latest_rail_month, str(error))
     if date.fromisoformat(rail_metadata["report_date"][:10]) < latest_rail_month:
         raise ValueError("Rail report date is earlier than the latest rail-data month.")
 

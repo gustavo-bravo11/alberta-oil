@@ -9,7 +9,13 @@ import polars as pl
 
 from pipeline.config.settings import RAW_BUCKET, VALIDATION_REPORTS_BUCKET
 from pipeline.config.sources import CER_RAIL_EXPORTS
-from pipeline.transform.c_1_rail_transform import MONTH_NUM, clean_column_names, read_rail_sheet, source_update_metadata
+from pipeline.transform.c_1_rail_transform import (
+    MONTH_NUM,
+    assumed_source_update_metadata,
+    clean_column_names,
+    read_rail_sheet,
+    source_update_metadata,
+)
 from pipeline.validate.common import finalize_frame, write_report
 from pipeline.validate.models import Severity, ValidationIssue, ValidationResult
 
@@ -61,7 +67,20 @@ def validate_rail() -> ValidationResult:
             invalid.add(row_index)
             issues.append(ValidationIssue("volume_m3_per_day", "Volume must be finite and non-negative.", Severity.ERROR, row_index + 9))
 
-    metadata = source_update_metadata(raw_path)
-    if latest is None or date.fromisoformat(metadata["report_date"][:10]) < latest:
+    if latest is None:
+        issues.append(ValidationIssue("report_date", "Rail workbook has no valid monthly rows.", Severity.ERROR))
+        return finalize_frame("cer_rail", raw_path.name, frame.drop("_row"), invalid, issues, "cer_rail_validated.csv")
+    try:
+        metadata = source_update_metadata(raw_path)
+    except ValueError as error:
+        metadata = assumed_source_update_metadata(latest, str(error))
+        issues.append(
+            ValidationIssue(
+                "report_date_assumed",
+                "Rail report date was assumed as the final calendar day of the latest data month.",
+                Severity.WARNING,
+            )
+        )
+    if date.fromisoformat(metadata["report_date"][:10]) < latest:
         issues.append(ValidationIssue("report_date", "Report date precedes latest rail month.", Severity.ERROR))
     return finalize_frame("cer_rail", raw_path.name, frame.drop("_row"), invalid, issues, "cer_rail_validated.csv")

@@ -24,3 +24,16 @@ class RailValidationTests(unittest.TestCase):
         ):
             issues = validate_rail()
         self.assertFalse(any(issue.severity is Severity.ERROR for issue in issues))
+
+    def test_unparseable_report_date_uses_latest_month_end_with_warning(self) -> None:
+        rail_frame = pl.DataFrame({"year": [2025], "month": ["July"], "volume_m3_per_day": [12.5]})
+        with (
+            patch("pipeline.validate.rail.read_rail_sheet", return_value=rail_frame),
+            patch("pipeline.validate.rail.source_update_metadata", side_effect=ValueError("No update date")),
+            patch("pipeline.validate.rail.finalize_frame", side_effect=lambda *args: args[4]),
+            self.assertWarnsRegex(RuntimeWarning, "assuming 2025-07-31"),
+        ):
+            issues = validate_rail()
+        warnings = [issue for issue in issues if issue.rule == "report_date_assumed"]
+        self.assertEqual(len(warnings), 1)
+        self.assertIs(warnings[0].severity, Severity.WARNING)

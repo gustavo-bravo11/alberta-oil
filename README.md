@@ -1,4 +1,7 @@
 # Alberta Oil Data Pipeline
+### Gustavo Bravo
+--
+Last Updated September 15, 2026
 
 This project retrieves selected Canada Energy Regulator (CER) oil data,
 validates it without overwriting the source record, transforms it into

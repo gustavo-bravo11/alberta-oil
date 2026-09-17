@@ -1,5 +1,6 @@
 beautifulsoup4
 fastexcel
 polars
+geopandas
 requests
 xlsx2csv

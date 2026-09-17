@@ -7,7 +7,7 @@ excluded from the scheduled/default extraction stages.
 
 from __future__ import annotations
 
-from pipeline.config.settings import RAW_BUCKET, RAW_RETRIEVAL_LOG
+from pipeline.config.settings import RAW_RETRIEVAL_LOG, RAW_TM_GEOSPATIAL_BUCKET
 from pipeline.config.sources import (
     NRCAN_TM_BASE_URL,
     NRCAN_TM_QUERY_PARAMS,
@@ -37,7 +37,7 @@ def extract_source(source: dict[str, str | int], context: RunContext) -> bool:
         response=response,
         file_url=response.url,
         output_name=raw_filename,
-        output_dir=RAW_BUCKET,
+        output_dir=RAW_TM_GEOSPATIAL_BUCKET,
     ):
         return False
 
@@ -55,6 +55,7 @@ def extract_source(source: dict[str, str | int], context: RunContext) -> bool:
 def main(run_id: str | None = None, run_type: str = "forced") -> None:
     """Download every configured one-time Trans Mountain GeoJSON layer."""
     context = RunContext(run_id, run_type) if run_id else RunContext.create(run_type)
+    RAW_TM_GEOSPATIAL_BUCKET.mkdir(parents=True, exist_ok=True)
     failed_sources = [
         str(source["name"])
         for source in NRCAN_TM_SOURCES

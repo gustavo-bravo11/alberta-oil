@@ -7,7 +7,12 @@ from datetime import date, datetime, timezone
 
 import polars as pl
 
-from pipeline.config.settings import RAW_BUCKET, VALIDATION_REPORTS_BUCKET
+from pipeline.config.settings import (
+    QUARANTINE_RAIL_BUCKET,
+    RAW_BUCKET,
+    VALIDATED_RAIL_BUCKET,
+    VALIDATION_RAIL_REPORTS_BUCKET,
+)
 from pipeline.config.sources import CER_RAIL_EXPORTS
 from pipeline.transform.c_1_rail_transform import (
     MONTH_NUM,
@@ -36,7 +41,7 @@ def validate_rail() -> ValidationResult:
             "cer_rail", raw_path.name, now, frame.height, 0, 0,
             [ValidationIssue("missing_headers", f"Missing headers: {', '.join(missing)}.", Severity.ERROR)],
         )
-        write_report(result, VALIDATION_REPORTS_BUCKET, now.strftime("%Y%m%dT%H%M%SZ"))
+        write_report(result, VALIDATION_RAIL_REPORTS_BUCKET, now.strftime("%Y%m%dT%H%M%SZ"))
         return result
 
     frame = frame.filter(pl.col("volume_m3_per_day").is_not_null()).with_columns(pl.col("year").forward_fill())
@@ -69,7 +74,17 @@ def validate_rail() -> ValidationResult:
 
     if latest is None:
         issues.append(ValidationIssue("report_date", "Rail workbook has no valid monthly rows.", Severity.ERROR))
-        return finalize_frame("cer_rail", raw_path.name, frame.drop("_row"), invalid, issues, "cer_rail_validated.csv")
+        return finalize_frame(
+            "cer_rail",
+            raw_path.name,
+            frame.drop("_row"),
+            invalid,
+            issues,
+            "cer_rail_validated.csv",
+            validated_dir=VALIDATED_RAIL_BUCKET,
+            quarantine_dir=QUARANTINE_RAIL_BUCKET,
+            reports_dir=VALIDATION_RAIL_REPORTS_BUCKET,
+        )
     try:
         metadata = source_update_metadata(raw_path)
     except ValueError as error:
@@ -83,4 +98,14 @@ def validate_rail() -> ValidationResult:
         )
     if date.fromisoformat(metadata["report_date"][:10]) < latest:
         issues.append(ValidationIssue("report_date", "Report date precedes latest rail month.", Severity.ERROR))
-    return finalize_frame("cer_rail", raw_path.name, frame.drop("_row"), invalid, issues, "cer_rail_validated.csv")
+    return finalize_frame(
+        "cer_rail",
+        raw_path.name,
+        frame.drop("_row"),
+        invalid,
+        issues,
+        "cer_rail_validated.csv",
+        validated_dir=VALIDATED_RAIL_BUCKET,
+        quarantine_dir=QUARANTINE_RAIL_BUCKET,
+        reports_dir=VALIDATION_RAIL_REPORTS_BUCKET,
+    )

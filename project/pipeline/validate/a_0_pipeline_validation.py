@@ -18,10 +18,10 @@ from pathlib import Path
 from typing import Iterable
 
 from pipeline.config.settings import (
-    QUARANTINE_BUCKET,
-    RAW_BUCKET,
-    VALIDATED_RAW_BUCKET,
-    VALIDATION_REPORTS_BUCKET,
+    QUARANTINE_THROUGHPUT_BUCKET,
+    RAW_THROUGHPUT_BUCKET,
+    VALIDATED_THROUGHPUT_BUCKET,
+    VALIDATION_THROUGHPUT_REPORTS_BUCKET,
 )
 from pipeline.config.sources import CER_PIPELINE_SOURCES
 from pipeline.validate.contracts import (
@@ -227,7 +227,7 @@ def validate_file(
     rejected = [row for row_number, row in enumerate(rows, start=2) if row_number in invalid_row_numbers]
     issues.extend(issue for row_issues in issues_by_row.values() for issue in row_issues)
 
-    history_path = reports_dir / "row_count_history.jsonl"
+    history_path = reports_dir.parent / "row_count_history.jsonl"
     previous_count = prior_row_count(history_path, contract.source_name)
     if previous_count is not None and len(rows) < previous_count:
         issues.append(
@@ -260,10 +260,10 @@ def validate_file(
 
 
 def validate_pipeline_throughput(
-    raw_dir: Path = RAW_BUCKET,
-    validated_dir: Path = VALIDATED_RAW_BUCKET,
-    quarantine_dir: Path = QUARANTINE_BUCKET,
-    reports_dir: Path = VALIDATION_REPORTS_BUCKET,
+    raw_dir: Path = RAW_THROUGHPUT_BUCKET,
+    validated_dir: Path = VALIDATED_THROUGHPUT_BUCKET,
+    quarantine_dir: Path = QUARANTINE_THROUGHPUT_BUCKET,
+    reports_dir: Path = VALIDATION_THROUGHPUT_REPORTS_BUCKET,
 ) -> list[ValidationResult]:
     """Validate every configured pipeline source and return all results."""
     results: list[ValidationResult] = []
@@ -286,10 +286,10 @@ def validate_pipeline_throughput(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--raw-dir", type=Path, default=RAW_BUCKET)
-    parser.add_argument("--validated-dir", type=Path, default=VALIDATED_RAW_BUCKET)
-    parser.add_argument("--quarantine-dir", type=Path, default=QUARANTINE_BUCKET)
-    parser.add_argument("--reports-dir", type=Path, default=VALIDATION_REPORTS_BUCKET)
+    parser.add_argument("--raw-dir", type=Path, default=RAW_THROUGHPUT_BUCKET)
+    parser.add_argument("--validated-dir", type=Path, default=VALIDATED_THROUGHPUT_BUCKET)
+    parser.add_argument("--quarantine-dir", type=Path, default=QUARANTINE_THROUGHPUT_BUCKET)
+    parser.add_argument("--reports-dir", type=Path, default=VALIDATION_THROUGHPUT_REPORTS_BUCKET)
     args = parser.parse_args()
     for result in validate_pipeline_throughput(
         args.raw_dir, args.validated_dir, args.quarantine_dir, args.reports_dir

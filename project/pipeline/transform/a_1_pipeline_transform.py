@@ -16,7 +16,7 @@ from __future__ import annotations
 import argparse
 import polars as pl
 
-from pipeline.config.settings import CUBIC_M_TO_BARRELS, THROUGHPUT_STAGE_1, VALIDATED_RAW_BUCKET
+from pipeline.config.settings import CUBIC_M_TO_BARRELS, THROUGHPUT_STAGE_1, VALIDATED_THROUGHPUT_BUCKET
 from pipeline.config.sources import CER_PIPELINE_SOURCES
 from pipeline.utils.timestamps import current_utc_timestamp
 
@@ -96,7 +96,7 @@ def clean_text(column: str) -> pl.Expr:
 
 def base_frame(source: dict[str, object]) -> pl.LazyFrame:
     """Load and normalize the fields common to all three pipeline sources."""
-    raw_frame = pl.scan_csv(VALIDATED_RAW_BUCKET / str(source["raw_filename"])).rename(
+    raw_frame = pl.scan_csv(VALIDATED_THROUGHPUT_BUCKET / str(source["raw_filename"])).rename(
         normalize_column_name
     )
     source_columns = raw_frame.collect_schema().names()

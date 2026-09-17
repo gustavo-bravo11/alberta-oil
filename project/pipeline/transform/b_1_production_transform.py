@@ -10,7 +10,7 @@ light and heavy, and the oil sands columns.
 This transformation step will use polars to create the "tables".
 For simplicity, we will just have a CSV table database.
 """
-from pipeline.config.settings import RAW_BUCKET, TRANSFORMED_BUCKET, VALIDATED_RAW_BUCKET, CUBIC_M_TO_BARRELS
+from pipeline.config.settings import RAW_BUCKET, TRANSFORMED_BUCKET, VALIDATED_PRODUCTION_BUCKET, CUBIC_M_TO_BARRELS
 from pipeline.config.sources import CER_PRODUCTION
 from pipeline.utils.source_metadata import append_source_metadata
 from pipeline.utils.timestamps import current_utc_timestamp
@@ -23,7 +23,7 @@ def main():
     file_path = RAW_BUCKET / CER_PRODUCTION["raw_filename"]
     report_metadata = production_report_metadata(file_path)
     date_transformed = current_utc_timestamp()
-    df = pl.read_csv(VALIDATED_RAW_BUCKET / "cer_production_validated.csv")
+    df = pl.read_csv(VALIDATED_PRODUCTION_BUCKET / "cer_production_validated.csv")
 
     # Clean column names and select our colunms
     df = df.rename(

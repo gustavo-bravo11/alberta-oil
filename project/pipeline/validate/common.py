@@ -9,7 +9,11 @@ from threading import Lock
 
 import polars as pl
 
-from pipeline.config.settings import QUARANTINE_BUCKET, VALIDATED_RAW_BUCKET, VALIDATION_REPORTS_BUCKET
+from pipeline.config.settings import (
+    QUARANTINE_BUCKET,
+    VALIDATED_RAW_BUCKET,
+    VALIDATION_REPORTS_BUCKET,
+)
 from pipeline.validate.contracts import CONTRACT_VERSION
 from pipeline.validate.models import Severity, ValidationIssue, ValidationResult
 
@@ -50,7 +54,7 @@ def write_report(result: ValidationResult, reports_dir: Path, timestamp: str) ->
     report["contract_version"] = CONTRACT_VERSION
     report["validator_version"] = VALIDATOR_VERSION
     report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
-    history_path = reports_dir / "row_count_history.jsonl"
+    history_path = reports_dir.parent / "row_count_history.jsonl"
     with REPORT_HISTORY_LOCK:
         with history_path.open("a", encoding="utf-8") as file:
             file.write(
@@ -73,14 +77,18 @@ def finalize_frame(
     invalid: set[int],
     issues: list[ValidationIssue],
     accepted_filename: str,
+    *,
+    validated_dir: Path = VALIDATED_RAW_BUCKET,
+    quarantine_dir: Path = QUARANTINE_BUCKET,
+    reports_dir: Path = VALIDATION_REPORTS_BUCKET,
 ) -> ValidationResult:
     """Write accepted/quarantined rows and return the source validation result."""
     now = datetime.now(timezone.utc)
     timestamp = now.strftime("%Y%m%dT%H%M%SZ")
     accepted = rows.filter([index not in invalid for index in range(rows.height)])
     rejected = rows.filter([index in invalid for index in range(rows.height)])
-    history = VALIDATION_REPORTS_BUCKET / "row_count_history.jsonl"
-    previous = prior_row_count(history, source_name)
+    history_path = reports_dir.parent / "row_count_history.jsonl"
+    previous = prior_row_count(history_path, source_name)
     if previous is not None and rows.height < previous:
         issues.append(
             ValidationIssue(
@@ -90,12 +98,12 @@ def finalize_frame(
             )
         )
 
-    accepted_path = VALIDATED_RAW_BUCKET / accepted_filename
+    accepted_path = validated_dir / accepted_filename
     accepted_path.parent.mkdir(parents=True, exist_ok=True)
     accepted.write_csv(accepted_path)
     quarantine_path: Path | None = None
     if rejected.height:
-        quarantine_path = QUARANTINE_BUCKET / source_name / f"{Path(accepted_filename).stem}-{timestamp}.csv"
+        quarantine_path = quarantine_dir / source_name / f"{Path(accepted_filename).stem}-{timestamp}.csv"
         quarantine_path.parent.mkdir(parents=True, exist_ok=True)
         rejected.write_csv(quarantine_path)
 
@@ -110,5 +118,5 @@ def finalize_frame(
         str(accepted_path),
         str(quarantine_path) if quarantine_path else None,
     )
-    write_report(result, VALIDATION_REPORTS_BUCKET, timestamp)
+    write_report(result, reports_dir, timestamp)
     return result

@@ -7,7 +7,12 @@ from datetime import date, datetime, timezone
 
 import polars as pl
 
-from pipeline.config.settings import RAW_BUCKET, VALIDATION_REPORTS_BUCKET
+from pipeline.config.settings import (
+    QUARANTINE_PRODUCTION_BUCKET,
+    RAW_BUCKET,
+    VALIDATED_PRODUCTION_BUCKET,
+    VALIDATION_PRODUCTION_REPORTS_BUCKET,
+)
 from pipeline.config.sources import CER_PRODUCTION
 from pipeline.utils.workbook_metadata import production_report_metadata
 from pipeline.validate.common import finalize_frame, write_report
@@ -49,7 +54,7 @@ def validate_production() -> ValidationResult:
             "cer_production", raw_path.name, now, frame.height, 0, 0,
             [ValidationIssue("missing_headers", f"Missing headers: {', '.join(missing)}.", Severity.ERROR)],
         )
-        write_report(result, VALIDATION_REPORTS_BUCKET, now.strftime("%Y%m%dT%H%M%SZ"))
+        write_report(result, VALIDATION_PRODUCTION_REPORTS_BUCKET, now.strftime("%Y%m%dT%H%M%SZ"))
         return result
 
     frame = frame.select(PRODUCTION_COLUMNS).filter(
@@ -85,4 +90,14 @@ def validate_production() -> ValidationResult:
     report = production_report_metadata(raw_path)
     if datetime.fromisoformat(report["report_date"]).date() < date.fromisoformat(report["latest_data_month"]):
         issues.append(ValidationIssue("report_date", "Report date precedes latest data month.", Severity.ERROR))
-    return finalize_frame("cer_production", raw_path.name, frame.drop("_row"), invalid, issues, "cer_production_validated.csv")
+    return finalize_frame(
+        "cer_production",
+        raw_path.name,
+        frame.drop("_row"),
+        invalid,
+        issues,
+        "cer_production_validated.csv",
+        validated_dir=VALIDATED_PRODUCTION_BUCKET,
+        quarantine_dir=QUARANTINE_PRODUCTION_BUCKET,
+        reports_dir=VALIDATION_PRODUCTION_REPORTS_BUCKET,
+    )

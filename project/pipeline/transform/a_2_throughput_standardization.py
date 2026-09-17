@@ -80,7 +80,7 @@ def main() -> None:
                 .str.to_lowercase()
                 .str.strip_chars()
                 .replace(PIPELINE_MAP)
-                .alias("pipeline_standard"),
+                .alias("pipeline_id"),
 
             pl.col('key_point')
                 .str.to_lowercase()
@@ -104,16 +104,16 @@ def main() -> None:
         .rename({
             "trade_type": "trade_type_original",
             "key_point": "key_point_original",
-            "pipeline": "pipeline_original",
+            "pipeline": "pipeline_name",
         })
         .select([
             'date', 
-            'pipeline_original', 
-            'pipeline_standard', 
-            'key_point_original', 
+            'pipeline_id', 
             'key_point_standard', 
-            'trade_type_original', 
             'trade_type_standard',
+            'pipeline_name', 
+            'key_point_original', 
+            'trade_type_original', 
             'product',
             'direction_of_flow', 
             'latitude', 
@@ -121,7 +121,7 @@ def main() -> None:
             'throughput_m3_d', 
             'throughput_barrels_d', 
         ])
-        .sort(['date', 'pipeline_standard'], descending=[True, False])
+        .sort(['date', 'pipeline_id', 'key_point_standard'], descending=[True, False, False])
         .with_columns(pl.lit(date_transformed).alias('date_transformed'))
     )
 
@@ -140,7 +140,7 @@ def main() -> None:
                 .str.to_lowercase()
                 .str.strip_chars()
                 .replace(PIPELINE_MAP)
-                .alias("pipeline_standard"),
+                .alias("pipeline_id"),
 
             pl.col('capacity_basis')
                 .str.to_lowercase()
@@ -164,15 +164,15 @@ def main() -> None:
                 .alias('reason_for_variance')
         )
         .rename({
-            "pipeline": "pipeline_original",
+            "pipeline": "pipeline_name",
             "capacity_basis": "capacity_basis_original",
         })
         .select([
             'date', 
-            'pipeline_original', 
-            'pipeline_standard',
-            'capacity_basis_original', 
+            'pipeline_id', 
             'capacity_basis_standard',
+            'pipeline_name',
+            'capacity_basis_original', 
             'capacity_scope',
             'total_throughput_m3_d', 
             'total_throughput_barrels_d', 
@@ -185,7 +185,7 @@ def main() -> None:
             'reported_available_capacity_utilization',
             'reason_for_variance', 
         ])
-        .sort(['date', 'pipeline_standard'], descending=[True, False])
+        .sort(['date', 'pipeline_id'], descending=[True, False])
         .with_columns(pl.lit(date_transformed).alias('date_transformed'))
     )
 

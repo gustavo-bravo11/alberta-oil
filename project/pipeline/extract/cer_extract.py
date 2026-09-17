@@ -24,7 +24,7 @@ from pipeline.utils.web_download import (
     safe_request_get,
 )
 from pipeline.config.sources import CER_PRODUCTION, CER_PIPELINE_SOURCES, CER_RAIL_EXPORTS
-from pipeline.config.settings import RAW_BUCKET, RAW_RETRIEVAL_LOG
+from pipeline.config.settings import RAW_BUCKET, RAW_RETRIEVAL_LOG, RAW_THROUGHPUT_BUCKET
 
 from pathlib import Path
 
@@ -39,10 +39,13 @@ def main(run_id: str | None = None, run_type: str = "forced") -> None:
     from pipeline.utils.run_context import RunContext
 
     context = RunContext(run_id, run_type) if run_id else RunContext.create(run_type)
+    RAW_BUCKET.mkdir(parents=True, exist_ok=True)
+    RAW_THROUGHPUT_BUCKET.mkdir(parents=True, exist_ok=True)
     sources = [CER_PRODUCTION] + CER_PIPELINE_SOURCES + [CER_RAIL_EXPORTS]
 
     failed_sources: list[str] = []
     for source in sources:
+        output_dir = RAW_THROUGHPUT_BUCKET if source in CER_PIPELINE_SOURCES else RAW_BUCKET
         cer_response = safe_request_get(url=source["source_page_url"])
         if not cer_response:
             failed_sources.append(str(source["name"]))
@@ -67,7 +70,7 @@ def main(run_id: str | None = None, run_type: str = "forced") -> None:
             response=excel_response,
             file_url=excel_url,
             output_name=source["raw_filename"],
-            output_dir=RAW_BUCKET
+            output_dir=output_dir,
         ):
             record_retrieval(
                 source_name=str(source["name"]),

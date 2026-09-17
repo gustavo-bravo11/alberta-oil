@@ -61,6 +61,12 @@ def run_extract_cer(context: RunContext) -> None:
     main(run_id=context.run_id, run_type=context.run_type)
 
 
+def run_extract_tm_geo(context: RunContext) -> None:
+    from pipeline.extract.tm_geo_extract import main
+
+    main(run_id=context.run_id, run_type=context.run_type)
+
+
 def run_validate_pipeline(context: RunContext) -> None:
     from pipeline.validate.a_0_pipeline_validation import validate_pipeline_throughput
     from pipeline.validate.common import print_validation_result
@@ -121,6 +127,13 @@ TASKS: dict[str, Task] = {
         name="extract.cer",
         description="Download all configured CER source files.",
         runner=run_extract_cer,
+    ),
+    # Static reference geometry: manually invoke with
+    # ``python -m pipeline.orchestrator task extract.tm_geo``.
+    "extract.tm_geo": Task(
+        name="extract.tm_geo",
+        description="Download the one-time NRCan Trans Mountain GeoJSON snapshot.",
+        runner=run_extract_tm_geo,
     ),
     "validate.pipeline": Task(
         name="validate.pipeline",

@@ -8,6 +8,7 @@ class is to minimize the amount of code we write while ensuring all our extract
 functions work in a similar fashion.
 """
 import csv
+from collections.abc import Mapping
 from datetime import datetime, timezone
 
 import requests
@@ -131,7 +132,12 @@ def find_file_url(response:Response, url:str, extensions:tuple[str, ...]) -> str
     return None
 
 
-def safe_request_get(url:str) -> Response|None:
+def safe_request_get(
+    url: str,
+    *,
+    params: Mapping[str, str] | None = None,
+    timeout: float = 30,
+) -> Response | None:
     """
     This function wraps the request python method around a try catch block.
     This is used to ensure that the content returned from a request is appropriate.
@@ -141,7 +147,7 @@ def safe_request_get(url:str) -> Response|None:
               None if an exception is caught and prints error to console
     """
     try:
-        response = requests.get(url)
+        response = requests.get(url, params=params, timeout=timeout)
         
         # This line converts 404 and 500 errors into exceptions
         response.raise_for_status()

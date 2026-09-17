@@ -42,3 +42,35 @@ CER_RAIL_EXPORTS = {
     "raw_filename": "cer_rail_exports_monthly_raw.xlsx",
     "output_filename": "monthly_rail_exports.csv",
 }
+
+
+"""NRCan geospatial source configuration for the Trans Mountain pipeline.
+
+Layer 1 contains facilities and layer 3 contains the existing pipeline. These
+are intentionally the only layers extracted for the initial one-time snapshot.
+"""
+NRCAN_TM_BASE_URL = (
+    "https://geoappext.nrcan.gc.ca/arcgis/rest/services/"
+    "FGP/TMX_EN/MapServer"
+)
+
+NRCAN_TM_QUERY_PARAMS = {
+    "where": "1=1",
+    "outFields": "*",
+    "returnGeometry": "true",
+    "outSR": "4326",
+    "f": "geojson",
+}
+
+NRCAN_TM_SOURCES = [
+    {
+        "name": "transmountain_facilities",
+        "layer_id": 1,
+        "raw_filename": "transmountain_facilities_raw.geojson",
+    },
+    {
+        "name": "transmountain_existing",
+        "layer_id": 3,
+        "raw_filename": "transmountain_existing_raw.geojson",
+    },
+]

@@ -45,7 +45,7 @@ class RailValidationTests(unittest.TestCase):
                 "pipeline.validate.c_0_rail_validation.source_update_metadata",
                 return_value={"report_date": "2025-02-01T00:00:00+00:00"},
             ),
-            patch("pipeline.validate.c_0_rail_validation.finalize_frame", side_effect=lambda *args: args[4]),
+            patch("pipeline.validate.c_0_rail_validation.finalize_frame", side_effect=lambda *args, **kwargs: args[4]),
         ):
             issues = validate_rail()
         self.assertFalse(any(issue.severity is Severity.ERROR for issue in issues))
@@ -55,7 +55,7 @@ class RailValidationTests(unittest.TestCase):
         with (
             patch("pipeline.validate.c_0_rail_validation.read_rail_sheet", return_value=rail_frame),
             patch("pipeline.validate.c_0_rail_validation.source_update_metadata", side_effect=ValueError("No update date")),
-            patch("pipeline.validate.c_0_rail_validation.finalize_frame", side_effect=lambda *args: args[4]),
+            patch("pipeline.validate.c_0_rail_validation.finalize_frame", side_effect=lambda *args, **kwargs: args[4]),
             self.assertWarnsRegex(RuntimeWarning, "assuming 2025-07-31"),
         ):
             issues = validate_rail()
@@ -71,7 +71,7 @@ class RailValidationTests(unittest.TestCase):
                 "pipeline.validate.c_0_rail_validation.source_update_metadata",
                 return_value={"report_date": "2024-12-01T00:00:00+00:00"},
             ),
-            patch("pipeline.validate.c_0_rail_validation.finalize_frame", side_effect=lambda *args: args[4]),
+            patch("pipeline.validate.c_0_rail_validation.finalize_frame", side_effect=lambda *args, **kwargs: args[4]),
         ):
             issues = validate_rail()
         self.assertTrue(any(issue.rule == "report_date" and issue.severity is Severity.ERROR for issue in issues))

@@ -29,7 +29,7 @@ class ProductionValidationTests(unittest.TestCase):
                 "pipeline.validate.b_0_production_validation.production_report_metadata",
                 return_value={"report_date": report_date, "latest_data_month": "2025-01-01"},
             ),
-            patch("pipeline.validate.b_0_production_validation.finalize_frame", side_effect=lambda *args: args[4]),
+            patch("pipeline.validate.b_0_production_validation.finalize_frame", side_effect=lambda *args, **kwargs: args[4]),
         ):
             return validate_production()
 

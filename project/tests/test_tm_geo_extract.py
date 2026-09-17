@@ -29,7 +29,12 @@ class TmGeoExtractTests(unittest.TestCase):
             [call.kwargs["output_name"] for call in download.call_args_list],
             ["transmountain_facilities_raw.geojson", "transmountain_existing_raw.geojson"],
         )
-        self.assertTrue(all(call.kwargs["output_dir"] == tm_geo_extract.RAW_BUCKET for call in download.call_args_list))
+        self.assertTrue(
+            all(
+                call.kwargs["output_dir"] == tm_geo_extract.RAW_TM_GEOSPATIAL_BUCKET
+                for call in download.call_args_list
+            )
+        )
         self.assertEqual(
             [call.kwargs["source_name"] for call in record.call_args_list],
             ["transmountain_facilities", "transmountain_existing"],

@@ -17,6 +17,11 @@ class OrchestratorTests(unittest.TestCase):
             ["extract.cer", "validate.pipeline", "transform.pipeline_stage_1", "transform.pipeline_stage_2"],
         )
 
+    def test_tm_geo_extract_is_a_standalone_manual_task(self) -> None:
+        plan = orchestrator.resolve_tasks(("extract.tm_geo",))
+        self.assertEqual([task.name for task in plan], ["extract.tm_geo"])
+        self.assertNotIn("extract.tm_geo", orchestrator.TARGETS["extract"])
+
     def test_validate_stage_includes_report_date_validation_once(self) -> None:
         plan = orchestrator.resolve_tasks(orchestrator.TARGETS["validate"])
         names = [task.name for task in plan]
